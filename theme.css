@@ -1,0 +1,255 @@
+/* =============================================
+   GAME HUB — Shared Theme
+   Import this in every game's HTML
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
+
+:root {
+  --bg:        #0d0d1a;
+  --panel:     #1a1a2e;
+  --panel2:    #16213e;
+  --primary:   #f5c542;
+  --primary2:  #e0a800;
+  --accent:    #e94560;
+  --accent2:   #c73652;
+  --green:     #2ecc71;
+  --blue:      #3498db;
+  --purple:    #9b59b6;
+  --text:      #ffffff;
+  --text2:     #b0b0c3;
+  --radius:    14px;
+  --radius-sm: 8px;
+  --shadow:    0 8px 32px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Starfield background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(94,60,204,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(233,69,96,0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  font-family: 'Rubik', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  position: relative;
+  z-index: 1;
+}
+.btn:hover  { transform: translateY(-2px); }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--primary);
+  color: #1a1a00;
+  box-shadow: 0 6px 0 var(--primary2), var(--shadow);
+}
+.btn-primary:hover { box-shadow: 0 8px 0 var(--primary2), var(--shadow); }
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 0 var(--accent2), var(--shadow);
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: none;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.14); }
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ---- Cards ---- */
+.card {
+  background: var(--panel);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: var(--shadow);
+  padding: 28px 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Timer (shared component) ---- */
+.hub-timer {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  font-family: 'Rubik', sans-serif;
+  font-size: 52px;
+  font-weight: 900;
+  background: var(--panel);
+  border: 2px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 8px 22px;
+  border-radius: 18px;
+  z-index: 999;
+  min-width: 120px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: color .3s, border-color .3s;
+}
+.hub-timer.warning {
+  color: var(--accent);
+  border-color: var(--accent);
+  animation: timer-pulse 0.6s infinite;
+}
+.hub-timer.hidden { display: none; }
+
+/* ---- Score Bar (Kahoot style) ---- */
+.score-bar {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.score-chip {
+  background: var(--panel2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform .2s, background .2s;
+}
+.score-chip.active {
+  background: var(--primary);
+  color: #1a1a00;
+  transform: scale(1.08);
+}
+.score-chip .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+/* ---- Kahoot Answer Buttons ---- */
+.kahoot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+.kahoot-btn {
+  padding: 22px 16px;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: transform .15s, filter .15s;
+  position: relative;
+  overflow: hidden;
+}
+.kahoot-btn:hover  { transform: scale(1.03); }
+.kahoot-btn:active { transform: scale(0.97); }
+.kahoot-btn.correct  { background: var(--green); color: #fff; animation: correct-pop .5s; }
+.kahoot-btn.wrong    { background: var(--accent); color: #fff; animation: wrong-shake .4s; }
+.kahoot-btn[data-shape="triangle"] { background: #e74c3c; color: #fff; }
+.kahoot-btn[data-shape="diamond"]  { background: #3498db; color: #fff; }
+.kahoot-btn[data-shape="circle"]   { background: #f39c12; color: #fff; }
+.kahoot-btn[data-shape="square"]   { background: var(--green); color: #fff; }
+
+/* ---- Leaderboard ---- */
+.leaderboard {
+  list-style: none;
+  padding: 0;
+}
+.leaderboard li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  margin: 6px 0;
+  background: var(--panel2);
+  border-radius: var(--radius-sm);
+  font-size: 18px;
+  font-weight: 700;
+  transition: transform .3s, background .3s;
+  animation: slide-in .4s both;
+}
+.leaderboard li:nth-child(1) { background: rgba(245,197,66,0.25); border: 1px solid var(--primary); }
+.leaderboard li:nth-child(2) { background: rgba(180,180,200,0.15); }
+.leaderboard li:nth-child(3) { background: rgba(205,127,50,0.15); }
+.leaderboard .rank-num { font-size: 22px; min-width: 32px; }
+.leaderboard .team-score { margin-left: auto; color: var(--primary); font-size: 22px; }
+
+/* ---- Animations ---- */
+@keyframes timer-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+@keyframes correct-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes wrong-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes score-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); color: var(--primary); }
+  100% { transform: scale(1); }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes confetti-fall {
+  to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+@keyframes reveal-pixel {
+  to { filter: blur(0px) brightness(1); }
+}
+
+.animate-fade-in-up { animation: fade-in-up .5s both; }
+
+/* ---- Misc ---- */
+.hidden { display: none !important; }
+h1, h2, h3 { font-family: 'Rubik', sans-serif; }
+select, input[type=checkbox], input[type=radio] {
+  accent-color: var(--primary);
+}
