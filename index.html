@@ -1,154 +1,208 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8" />
-  <title>🎮 Image Guess Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>🎮 Game Hub</title>
+  <link rel="stylesheet" href="shared/theme.css"/>
+  <style>
+    .hub-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .hub-header {
+      text-align: center;
+      margin-bottom: 50px;
+      animation: fade-in-up .6s both;
+    }
+    .hub-header h1 {
+      font-size: clamp(40px, 8vw, 72px);
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #f5c542, #e94560);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hub-header p {
+      color: var(--text2);
+      font-size: 18px;
+      margin-top: 12px;
+    }
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .game-card {
+      background: var(--panel);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+      animation: fade-in-up .5s both;
+      text-decoration: none;
+      display: block;
+    }
+    .game-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .game-card:nth-child(2) { animation-delay: .1s; }
+    .game-card:nth-child(3) { animation-delay: .2s; }
+    .game-card:nth-child(4) { animation-delay: .3s; }
+    .game-card-banner {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-card-banner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, var(--panel));
+    }
+    .game-card-body {
+      padding: 16px 22px 22px;
+    }
+    .game-card-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .game-card-body p {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .badge-green  { background: rgba(46,204,113,0.2); color: #2ecc71; }
+    .badge-yellow { background: rgba(245,197,66,0.2); color: #f5c542; }
+    .badge-red    { background: rgba(233,69,96,0.2);  color: #e94560; }
+    .badge-blue   { background: rgba(52,152,219,0.2); color: #3498db; }
+    .badge-gray   { background: rgba(255,255,255,0.08); color: var(--text2); }
+    .coming-soon-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(13,13,26,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text2);
+      letter-spacing: 1px;
+    }
+    /* Pixel effect preview */
+    .pixel-preview {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      padding: 16px;
+      opacity: 0.7;
+    }
+    .pixel-preview span {
+      aspect-ratio: 1;
+      border-radius: 2px;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="hub-container">
+    <header class="hub-header">
+      <h1>🎮 Game Hub</h1>
+      <p>現場活動遊戲合集 · 大螢幕投影優化</p>
+    </header>
 
-<!-- ================= Audio ================= -->
-<audio id="bgm" src="audio/bgm.mp3" loop></audio>
-<audio id="sfxScore" src="audio/score.mp3"></audio>
-<audio id="sfxNext" src="audio/next.mp3"></audio>
+    <div class="game-grid">
 
-<!-- ================= Setup ================= -->
-<div id="setup" class="card">
+      <!-- Image Guess -->
+      <a href="image-guess/index.html" class="game-card">
+        <div class="game-card-banner" style="background: linear-gradient(135deg,#1a1a2e,#16213e);">
+          <span>🖼️</span>
+        </div>
+        <div class="game-card-body">
+          <h2>看圖估字</h2>
+          <p>睇圖片估答案，考眼力同反應！多隊競技，即時計分。</p>
+          <div class="badge-row">
+            <span class="badge badge-green">✅ 已完成</span>
+            <span class="badge badge-yellow">多隊</span>
+            <span class="badge badge-blue">限時模式</span>
+          </div>
+        </div>
+      </a>
 
-  <h1>🎮 Image Guess</h1>
+      <!-- Pixel Guess -->
+      <a href="pixel-guess/index.html" class="game-card">
+        <div class="game-card-banner" style="background: linear-gradient(135deg,#0f3460,#533483);">
+          <span>🔍</span>
+        </div>
+        <div class="game-card-body">
+          <h2>像素猜圖</h2>
+          <p>圖片由模糊像素慢慢變清晰——越快答中得分越高！</p>
+          <div class="badge-row">
+            <span class="badge badge-green">✅ 新遊戲</span>
+            <span class="badge badge-red">搶答</span>
+            <span class="badge badge-yellow">加速分</span>
+          </div>
+        </div>
+      </a>
 
-  <!-- Language & Content -->
-  <section>
-    <h2>1. Language & Content</h2>
+      <!-- Music Guess -->
+      <div class="game-card" style="position:relative; cursor:default;">
+        <div class="game-card-banner" style="background: linear-gradient(135deg,#1a0f2e,#3d1a4e);">
+          <span>🎵</span>
+        </div>
+        <div class="game-card-body">
+          <h2>估歌名</h2>
+          <p>播音樂片段，搶先估中歌名得分！支援 YouTube / 本地音訊。</p>
+          <div class="badge-row">
+            <span class="badge badge-gray">📋 計劃中</span>
+          </div>
+        </div>
+        <div class="coming-soon-overlay">🔒 Coming Soon</div>
+      </div>
 
-    <label>Language</label>
-    <select id="languageSelect">
-      <option value="">Select language</option>
-      <option value="zh">中文</option>
-      <option value="th">ไทย</option>
-    </select>
+      <!-- TV Game -->
+      <div class="game-card" style="position:relative; cursor:default;">
+        <div class="game-card-banner" style="background: linear-gradient(135deg,#0a1628,#1e3a5f);">
+          <span>📺</span>
+        </div>
+        <div class="game-card-body">
+          <h2>大電視 Quiz</h2>
+          <p>Kahoot 風格多選題，即時顯示答題分佈同排行榜。</p>
+          <div class="badge-row">
+            <span class="badge badge-gray">📋 計劃中</span>
+          </div>
+        </div>
+        <div class="coming-soon-overlay">🔒 Coming Soon</div>
+      </div>
 
-    <label>Content Group</label>
-    <select id="groupSelect" disabled>
-      <option value="">Select language first</option>
-    </select>
-
-    <label>Categories (multiple)</label>
-    <div id="categorySelect" class="checkbox-group"></div>
-  </section>
-
-  <!-- Game Mode -->
-  <section>
-    <h2>2. Game Mode</h2>
-
-    <label>
-      <input type="radio" name="gameMode" value="standard" checked>
-      Standard Mode（一起玩）
-    </label>
-
-    <label>
-      <input type="radio" name="gameMode" value="timeAttack">
-      Time Attack Mode（輪流限時）
-    </label>
-  </section>
-
-  <!-- Standard Mode Options -->
-  <section id="standardOptions">
-    <h3>Standard Mode – Time Rules（可選）</h3>
-
-    <label>
-      <input type="checkbox" id="enablePerQuestionTimer">
-      啟用每題限時
-    </label>
-
-    <div id="perQuestionTimerOptions">
-      <label><input type="radio" name="perQuestionTime" value="15"> 15 秒</label>
-      <label><input type="radio" name="perQuestionTime" value="20"> 20 秒</label>
-      <label><input type="radio" name="perQuestionTime" value="30" checked> 30 秒（預設）</label>
-      <label><input type="radio" name="perQuestionTime" value="45"> 45 秒</label>
     </div>
-
-    <h3>題目數量</h3>
-    <label><input type="radio" name="qPerRound" value="5"> 5</label>
-    <label><input type="radio" name="qPerRound" value="10" checked> 10（預設）</label>
-    <label><input type="radio" name="qPerRound" value="15"> 15</label>
-    <label><input type="radio" name="qPerRound" value="20"> 20</label>
-  </section>
-
-  <!-- Time Attack Options -->
-  <section id="timeAttackOptions" class="hidden">
-    <h3>Time Attack – 每隊總時間（必選）</h3>
-
-    <label>
-      <input type="radio" name="totalTime" value="180">
-      3 分鐘
-    </label>
-
-    <label>
-      <input type="radio" name="totalTime" value="300" checked>
-      5 分鐘（預設）
-    </label>
-
-    <label>
-      <input type="radio" name="totalTime" value="600">
-      10 分鐘
-    </label>
-  </section>
-
-  <!-- Teams -->
-  <section>
-    <h2>3. Teams</h2>
-
-    <label>隊伍數量</label>
-    <select id="teamSelect">
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3" selected>3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-    </select>
-  </section>
-
-  <button id="toSummaryBtn">Next ▶</button>
-</div>
-
-<!-- ================= Summary ================= -->
-<div id="summary" class="card hidden">
-  <h1>Game Summary</h1>
-  <ul id="summaryList"></ul>
-
-  <button id="backToSetupBtn">⬅ Back</button>
-  <button id="startBtn">▶ Start Game</button>
-</div>
-
-<!-- ================= Game Screen ================= -->
-<div id="game" class="hidden">
-
-  <!-- Timer -->
-  <div id="timerBox" class="timer hidden"></div>
-
-  <h2 id="questionTitle"></h2>
-
-  <!-- Images -->
-  <div id="imageRow" class="image-row"></div>
-
-  <!-- Answer -->
-<div id="answer" class="hidden"></div>
-<button id="toggleAnswerBtn">顯示答案</button>
-
-<!-- 🔽 新增：提示 -->
-<div id="hint" class="hidden"></div>
-<button id="toggleHintBtn">💡 提示（-1 分）</button>
-
-
-  <!-- Team Buttons -->
-  <div id="teamButtons" class="team-buttons"></div>
-
-  <button id="nextBtn">Next ▶</button>
-</div>
-
-<script src="script.js"></script>
+  </div>
 </body>
 </html>
