@@ -160,28 +160,33 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 @keyframes bonusPulse{0%,100%{transform:scale(1);box-shadow:0 4px 20px rgba(245,197,66,.4);}50%{transform:scale(1.05);box-shadow:0 6px 28px rgba(245,197,66,.7);}}
 @keyframes bonusIconBounce{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
 
-/* Image equation */
+/* Image equation — outer wrap is transparent/dark, each image has own white card */
 .eq-wrap{
-  background:#fff;border-radius:20px;
-  border:1px solid rgba(255,255,255,.1);
-  padding:20px;margin-bottom:12px;
+  background:var(--panel2);border-radius:20px;
+  border:1px solid rgba(255,255,255,.07);
+  padding:20px 16px;margin-bottom:12px;
   display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
-  gap:14px;min-height:170px;position:relative;z-index:1;
+  gap:16px;min-height:180px;position:relative;z-index:1;
 }
 .eq-img-wrap{display:flex;flex-direction:column;align-items:center;gap:0;}
+/* White card per image */
 .eq-img{
-  width:clamp(90px,16vw,145px);height:clamp(90px,16vw,145px);
-  object-fit:contain;border-radius:10px;
+  width:clamp(100px,18vw,155px);height:clamp(100px,18vw,155px);
+  object-fit:contain;border-radius:12px;
   background:#fff;display:block;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
+  padding:6px;
 }
 .eq-img-placeholder{
-  width:clamp(90px,16vw,145px);height:clamp(90px,16vw,145px);
-  border-radius:10px;background:#f0f0f0;
+  width:clamp(100px,18vw,155px);height:clamp(100px,18vw,155px);
+  border-radius:12px;background:#fff;
   border:2px dashed #ccc;display:flex;align-items:center;
-  justify-content:center;font-size:28px;color:#bbb;
+  justify-content:center;font-size:32px;color:#bbb;
+  box-shadow:0 4px 14px rgba(0,0,0,.2);
 }
-.eq-op{font-family:'Rubik',sans-serif;font-size:clamp(22px,4vw,36px);font-weight:900;color:#333;}
-.eq-result{font-family:'Rubik',sans-serif;font-size:clamp(22px,4vw,36px);font-weight:900;color:var(--accent);}
+/* Bigger, bolder operators */
+.eq-op{font-family:'Rubik',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:900;color:rgba(255,255,255,.5);}
+.eq-result{font-family:'Rubik',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:900;color:var(--primary);}
 
 /* Team scoring buttons */
 .team-btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0;}
@@ -235,10 +240,42 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 }
 @keyframes timeupPop{0%{transform:scale(0) rotate(-20deg);opacity:0;}60%{transform:scale(1.2) rotate(3deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
 
+/* Round transition screen */
+#screen-round{display:none;text-align:center;padding:60px 20px;}
+.round-transition-num{
+  font-family:'Rubik',sans-serif;font-size:clamp(80px,20vw,160px);font-weight:900;
+  background:linear-gradient(135deg,#f5c542,#e94560);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;animation:roundNumPop .6s both;
+}
+.round-transition-label{
+  font-family:'Rubik',sans-serif;font-size:clamp(20px,4vw,32px);font-weight:700;
+  color:var(--text2);margin-bottom:32px;letter-spacing:2px;text-transform:uppercase;
+  animation:roundNumPop .6s .1s both;
+}
+.round-scores{
+  display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:36px;
+  animation:fadeUp .5s .2s both;
+}
+.round-score-chip{
+  background:var(--panel);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:12px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;min-width:100px;
+}
+.round-score-chip .rs-name{font-size:13px;color:var(--text2);font-weight:700;}
+.round-score-chip .rs-score{font-family:'Rubik',sans-serif;font-size:26px;font-weight:900;color:var(--primary);}
+@keyframes roundNumPop{0%{transform:scale(0.5);opacity:0;}70%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
+
 /* TA wait screen */
 .ta-wait{text-align:center;padding:36px 20px;color:var(--text2);font-size:18px;line-height:1.7;}
 .ta-wait strong{display:block;font-family:'Rubik',sans-serif;font-size:30px;color:var(--text);margin-bottom:8px;}
 .ta-wait .ta-diff-info{display:inline-block;margin-top:8px;font-size:14px;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.08);}
+/* TA score summary inside eq-wrap after player finishes */
+.ta-summary{text-align:center;padding:28px 16px;}
+.ta-summary .ta-s-name{font-family:'Rubik',sans-serif;font-size:26px;font-weight:900;margin-bottom:6px;}
+.ta-summary .ta-s-stat{font-size:18px;color:var(--text2);margin-bottom:4px;}
+.ta-summary .ta-s-score{font-family:'Rubik',sans-serif;font-size:48px;font-weight:900;color:var(--primary);margin:8px 0;}
 
 /* End screen */
 #screen-end{display:none;text-align:center;padding-top:20px;}
@@ -343,9 +380,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   <div id="ta-sub" style="display:none;margin-top:14px;">
     <p style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:7px;">TOTAL TIME PER PLAYER</p>
     <div class="pill-row" id="total-opts">
+      <div class="pill sel" data-val="60">1 min</div>
+      <div class="pill" data-val="120">2 min</div>
       <div class="pill" data-val="180">3 min</div>
-      <div class="pill sel" data-val="300">5 min</div>
-      <div class="pill" data-val="600">10 min</div>
     </div>
     <p style="font-size:12px;color:var(--text2);font-weight:700;margin:12px 0 7px;">PLAY ORDER</p>
     <div class="pill-row" id="ta-order-opts">
@@ -400,14 +437,10 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
 </div>
 
-<!-- Teams / Players -->
+<!-- Players -->
 <div class="section">
-  <div class="sec-title">Teams / Players</div>
-  <div class="team-type-row">
-    <div class="pill sel" data-val="team" id="type-team" onclick="setEntityType('team')">👥 Teams</div>
-    <div class="pill" data-val="player" id="type-player" onclick="setEntityType('player')">👤 Players</div>
-  </div>
-  <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">Number:</p>
+  <div class="sec-title">Players</div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">Number of players:</p>
   <div class="pill-row" id="team-opts">
     <div class="pill" data-val="1">1</div>
     <div class="pill sel" data-val="2">2</div>
@@ -494,7 +527,14 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 
 </div><!-- /wrap -->
 
-<!-- Time-up overlay -->
+<!-- ══════════════════════ ROUND TRANSITION ══════════════════════ -->
+<div id="screen-round">
+  <div class="round-transition-label">ROUND</div>
+  <div class="round-transition-num" id="round-trans-num">2</div>
+  <div class="round-transition-label" style="margin-top:8px;">GET READY!</div>
+  <div class="round-scores" id="round-trans-scores"></div>
+  <button class="btn btn-primary" id="round-trans-btn" style="font-size:20px;padding:16px 40px;">▶ Start Round <span id="round-trans-num2">2</span></button>
+</div>
 <div class="timeup-overlay hidden" id="timeup-overlay">
   <div class="timeup-text" id="timeup-text">TIME'S UP!</div>
 </div>
@@ -523,19 +563,18 @@ const CAT_MAP={
 // ═══════════════════════════════════════════
 const cfg={
   mode:'standard',
-  entityType:'team',      // 'team' or 'player'
   language:'',group:'',categories:[],
   difficulties:new Set(['easy','normal','hard','extreme']),
   questionsPerRound:10,
   rounds:1,
   teams:2,
   perQuestionSec:30,
-  totalSec:300,
+  totalSec:60,       // Time Attack: 1 min default
   haSec:15,
-  taOrder:'sequence',      // 'sequence' or 'custom'
-  taPlayOrder:[],          // custom drag order (indices)
-  taPlayerDiff:{},         // {teamIndex: 'easy'|'normal'|'hard'|'extreme'}
-  teamNames:Array.from({length:10},(_,i)=>'Team '+(i+1))
+  taOrder:'sequence',
+  taPlayOrder:[],
+  taPlayerDiff:{},
+  teamNames:Array.from({length:10},(_,i)=>'Player '+(i+1))
 };
 
 // ═══════════════════════════════════════════
@@ -546,7 +585,9 @@ let queue=[],qIdx=0,currentQ=null,hintUsed=false,currentPts=0;
 let scores=[],activeTeam=0,timerInterval=null,questionStartTime=0;
 let currentRound=1,taTeamIndex=0,taPlaySeq=[];
 let haCurrentTarget=0,haDeducted=false;
-let scoredTeams=new Set(); // tracks who scored THIS question (Standard/TA)
+let scoredTeams=new Set();
+// Time Attack per-player stats
+let taCorrectCount=0,taRemainingAtEnd=0;
 
 // ═══════════════════════════════════════════
 // BGM — royalty-free using Web Audio API
@@ -741,28 +782,19 @@ initPills('team-opts',val=>{
   if(cfg.taOrder==='custom') buildDragOrder();
 });
 
-// Entity type (team vs player)
-function setEntityType(t){
-  cfg.entityType=t;
-  document.getElementById('type-team').classList.toggle('sel',t==='team');
-  document.getElementById('type-player').classList.toggle('sel',t==='player');
-  renderTeamInputs();
-}
-
 function renderTeamInputs(){
-  const label=cfg.entityType==='team'?'Team':'Player';
   document.getElementById('team-inputs').innerHTML=
     Array.from({length:cfg.teams},(_,i)=>`
       <div class="team-row" style="margin-top:8px;">
         <div class="team-dot" style="background:${TEAM_COLORS[i]}"></div>
         <input class="team-inp" type="text"
-          placeholder="${label} ${i+1}"
-          value="${cfg.teamNames[i]||label+' '+(i+1)}"
+          placeholder="Player ${i+1}"
+          value="${cfg.teamNames[i]||'Player '+(i+1)}"
           data-ti="${i}"/>
       </div>`).join('');
   document.getElementById('team-inputs').querySelectorAll('input').forEach(inp=>{
     inp.addEventListener('input',function(){
-      cfg.teamNames[+this.dataset.ti]=this.value||((cfg.entityType==='team'?'Team':'Player')+' '+(+this.dataset.ti+1));
+      cfg.teamNames[+this.dataset.ti]=this.value||('Player '+(+this.dataset.ti+1));
       if(cfg.mode==='timeAttack') refreshTAPlayerDiff();
       if(cfg.taOrder==='custom') buildDragOrder();
     });
@@ -827,16 +859,13 @@ function renderDragChips(row,names){
 // START
 // ═══════════════════════════════════════════
 document.getElementById('start-btn').addEventListener('click',function(){
-  // Collect names
   document.getElementById('team-inputs').querySelectorAll('input').forEach((inp,i)=>{
-    cfg.teamNames[i]=inp.value.trim()||((cfg.entityType==='team'?'Team':'Player')+' '+(i+1));
+    cfg.teamNames[i]=inp.value.trim()||('Player '+(i+1));
   });
-  // Init scores
   scores=new Array(cfg.teams).fill(cfg.mode==='heartAttack'?10:0);
   activeTeam=0; currentRound=1; usedIds=new Set();
-  buildQueue();
-  qIdx=0; taTeamIndex=0;
-  // Build TA play sequence
+  taTeamIndex=0; taCorrectCount=0; taRemainingAtEnd=0;
+  buildQueue(); qIdx=0;
   taPlaySeq=cfg.taOrder==='custom'&&cfg.taPlayOrder.length===cfg.teams
     ?[...cfg.taPlayOrder]:[...Array(cfg.teams).keys()];
   showScreen('game');
@@ -868,19 +897,18 @@ function buildQueue(){
 function loadQ(){
   stopTimer();
   if(qIdx>=queue.length){
-    // End of round
     if(cfg.mode==='timeAttack'){
-      // Handled by the timer; shouldn't reach here normally
-      advanceTATeam();
+      // TA: questions ran out before timer — just rebuild and continue
+      buildQueue(); qIdx=0;
+      if(!queue.length){ advanceTATeam(); return; }
+      // fall through to load next question
     } else {
-      // Standard / HA: check rounds
+      // Standard / HA: end of round
       if(currentRound<cfg.rounds){
-        currentRound++;
-        buildQueue(); qIdx=0;
-        loadQ();
+        showRoundTransition(currentRound+1);
       } else { endGame(); }
+      return;
     }
-    return;
   }
 
   currentQ=queue[qIdx]; qIdx++;
@@ -889,18 +917,15 @@ function loadQ(){
   scoredTeams=new Set();
   haDeducted=false;
 
-  // Pick HA target
   if(cfg.mode==='heartAttack'){
     haCurrentTarget=Math.floor(Math.random()*cfg.teams);
   }
 
-  // Base points (may be overridden per TA player diff)
   const diff=cfg.mode==='timeAttack'
     ?(cfg.taPlayerDiff[taPlaySeq[taTeamIndex]]||currentQ.difficulty)
     :currentQ.difficulty;
   currentPts=DIFF_SCORE[diff]||1;
 
-  // UI
   document.getElementById('q-bar').style.width=((qIdx-1)/queue.length*100)+'%';
   document.getElementById('q-counter').textContent='Q '+qIdx+' / '+queue.length;
   document.getElementById('round-badge').textContent='Round '+currentRound+(cfg.rounds>1?' / '+cfg.rounds:'');
@@ -915,7 +940,6 @@ function loadQ(){
   document.getElementById('btn-hint').disabled=!currentQ.note;
   document.getElementById('bonus-banner').classList.add('hidden');
 
-  // HA banner
   const haBan=document.getElementById('ha-banner');
   if(cfg.mode==='heartAttack'){
     haBan.classList.remove('hidden');
@@ -927,17 +951,16 @@ function loadQ(){
   renderScoreBar();
   renderTeamBtns();
 
-  // Timers
+  // Per-question timers (Standard + HA only; TA has its own running total timer)
   if(cfg.mode==='standard' && cfg.perQuestionSec>0){
     document.getElementById('bonus-banner').classList.remove('hidden');
     startTimer(cfg.perQuestionSec,()=>showAnswer());
   }
   if(cfg.mode==='heartAttack'){
     startTimer(cfg.haSec,()=>{
-      // Time's up — deduct from target
       if(!haDeducted){
         haDeducted=true;
-        scores[haCurrentTarget]=Math.max(0,scores[haCurrentTarget]-1);
+        scores[haCurrentTarget]=Math.max(0,(scores[haCurrentTarget]||0)-1);
         renderScoreBar();
       }
       showAnswer();
