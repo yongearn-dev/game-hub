@@ -2,7 +2,7 @@
 import { Timer, Leaderboard, launchConfetti, playSound, shuffle } from '../shared/hub.js';
 
 /* ====== Data ====== */
-const IMAGE_BASE = "https://yongearn-dev.github.io/guess-word-game/images/";
+const IMAGE_BASE = "https://yongearn-dev.github.io/game-hub/image-guess/images/";
 const SHEET_URL  = "https://opensheet.elk.sh/1nmgda-PSW0qNpEnT65HozbrbK4SPoOlfq3WlEIQSgf4/Sheet1";
 
 const DIFF_SCORE = { easy:1, normal:2, hard:3, extreme:5 };
