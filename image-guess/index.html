@@ -103,6 +103,17 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* ══════════════ GAME SCREEN ══════════════ */
 #screen-game{display:none;}
+/* Lock layout with fixed rows — nothing shifts */
+.game-layout{
+  display:flex;flex-direction:column;gap:0;
+}
+.game-row-scores{min-height:44px;}
+.game-row-progress{min-height:24px;}
+.game-row-banner{min-height:0;transition:min-height .2s;}  /* HA banner */
+.game-row-eq{min-height:200px;}
+.game-row-ans{height:110px;flex-shrink:0;}   /* fixed answer area */
+.game-row-btns{min-height:60px;}
+.game-row-ctrl{min-height:50px;}
 
 /* Score bar */
 .score-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
@@ -124,11 +135,17 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .diff-extreme{background:rgba(155,89,182,.18);color:#9b59b6;}
 .q-unseen{font-size:12px;color:var(--text2);margin-left:auto;}
 
-/* Fixed-height answer+hint zone — prevents layout shift */
+/* Fixed-height answer+hint zone — one item visible at a time, no layout shift */
 .ans-hint-area{
   margin:14px 0 10px;
-  min-height:130px;      /* holds answer OR hint without shifting */
-  display:flex;flex-direction:column;gap:8px;justify-content:center;
+  height:110px;          /* fixed — never changes */
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+/* Both children fill the slot; visibility toggled by JS */
+.ans-hint-area > div{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
 }
 /* Answer — slightly smaller so it fits the fixed zone */
 .ans-box{
@@ -144,7 +161,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   animation:pop .4s;
   letter-spacing:-1px;
   text-shadow:0 0 30px rgba(245,197,66,.4);
-  width:100%;
+  width:100%;max-height:110px;overflow:hidden;
 }
 /* Hint — bigger, more readable */
 .hint-box{
@@ -154,22 +171,35 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   line-height:1.5;border:1px solid rgba(52,152,219,.3);width:100%;
 }
 
-/* Bonus x2 badge */
+/* Bonus x2 badge — floating beside timer, no box */
 .bonus-banner{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  padding:8px 0;margin-bottom:8px;
+  position:fixed;
+  top:90px;   /* just below hub-timer */
+  right:20px;
+  z-index:998;
+  display:flex;flex-direction:column;align-items:center;
+  transform:rotate(6deg);
+  pointer-events:none;
 }
-.bonus-chip{
-  display:inline-flex;align-items:center;gap:7px;
-  background:linear-gradient(135deg,#f5c542,#e67e22);
-  color:#1a1a00;font-family:'Rubik',sans-serif;font-weight:900;font-size:20px;
-  padding:8px 20px;border-radius:50px;
-  box-shadow:0 4px 20px rgba(245,197,66,.4);
-  animation:bonusPulse 1.2s ease-in-out infinite;
+.bonus-word{
+  font-family:'Rubik',sans-serif;font-weight:900;font-size:16px;
+  color:#f5c542;
+  text-shadow: -2px -2px 0 #a06c00, 2px -2px 0 #a06c00, -2px 2px 0 #a06c00, 2px 2px 0 #a06c00,
+               0 3px 8px rgba(0,0,0,.6);
+  letter-spacing:1px;line-height:1;
 }
-.bonus-icon{font-size:22px;animation:bonusIconBounce 1.2s ease-in-out infinite;}
-@keyframes bonusPulse{0%,100%{transform:scale(1);box-shadow:0 4px 20px rgba(245,197,66,.4);}50%{transform:scale(1.05);box-shadow:0 6px 28px rgba(245,197,66,.7);}}
-@keyframes bonusIconBounce{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+.bonus-num{
+  font-family:'Rubik',sans-serif;font-weight:900;font-size:48px;
+  color:#fff700;line-height:.9;
+  text-shadow: -3px -3px 0 #c47a00, 3px -3px 0 #c47a00, -3px 3px 0 #c47a00, 3px 3px 0 #c47a00,
+               -1px -1px 0 #e0a800, 1px -1px 0 #e0a800, -1px 1px 0 #e0a800, 1px 1px 0 #e0a800,
+               0 6px 20px rgba(245,197,66,.8);
+  animation:bonusNumPulse 1s ease-in-out infinite;
+}
+@keyframes bonusNumPulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.12);}
+}
 
 /* Image equation — outer wrap is transparent/dark, each image has own white card */
 .eq-wrap{
@@ -474,52 +504,63 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 <div id="screen-game">
   <div id="hub-timer" class="hub-timer hidden"></div>
 
-  <!-- Score bar -->
-  <div class="score-bar" id="score-bar"></div>
+  <div class="game-layout">
 
-  <!-- Progress & counters -->
-  <div class="q-progress"><div class="q-bar" id="q-bar"></div></div>
-  <div class="q-counter-row">
-    <span class="q-counter" id="q-counter">Q 1 / 10</span>
-    <span class="round-badge" id="round-badge">Round 1</span>
-    <span class="q-diff-badge" id="q-diff"></span>
-    <span class="q-unseen" id="q-unseen"></span>
+  <!-- ROW: Score bar -->
+  <div class="game-row-scores">
+    <div class="score-bar" id="score-bar"></div>
   </div>
 
-  <!-- Heart Attack: target player banner -->
+  <!-- ROW: Progress & counters -->
+  <div class="game-row-progress">
+    <div class="q-progress"><div class="q-bar" id="q-bar"></div></div>
+    <div class="q-counter-row">
+      <span class="q-counter" id="q-counter">Q 1 / 10</span>
+      <span class="round-badge" id="round-badge">Round 1</span>
+      <span class="q-diff-badge" id="q-diff"></span>
+      <span class="q-unseen" id="q-unseen"></span>
+    </div>
+  </div>
+
+  <!-- ROW: HA banner (collapses when hidden) -->
   <div id="ha-banner" class="ha-target-banner hidden">
     <div class="ha-label">🎯 This question is for:</div>
     <div class="ha-name" id="ha-name">—</div>
     <div class="ha-deduct-note">No answer in time → −1 pt</div>
   </div>
 
-  <!-- Bonus x2 banner (Standard mode, first 10s) -->
-  <div class="bonus-banner hidden" id="bonus-banner">
-    <div class="bonus-chip">
-      <span class="bonus-icon">⚡</span>
-      <span>BONUS ×2</span>
-      <span class="bonus-icon">⚡</span>
-    </div>
+  <!-- ROW: Image equation (fixed min-height) -->
+  <div class="game-row-eq">
+    <div class="eq-wrap" id="eq-wrap"></div>
   </div>
 
-  <!-- Image equation -->
-  <div class="eq-wrap" id="eq-wrap"></div>
-
-  <!-- Answer area -->
-  <div class="ans-hint-area">
+  <!-- ROW: Answer / Hint (fixed height, no shift) -->
+  <div class="ans-hint-area game-row-ans">
     <div class="ans-box hidden" id="ans-box"></div>
     <div class="hint-box hidden" id="hint-box"></div>
   </div>
 
-  <!-- Team scoring buttons -->
-  <div class="team-btns" id="team-btns"></div>
+  <!-- ROW: Team scoring buttons -->
+  <div class="game-row-btns">
+    <div class="team-btns" id="team-btns"></div>
+  </div>
 
-  <!-- Controls -->
-  <div class="ctrl-row">
-    <button class="btn btn-ghost btn-sm" id="btn-hint">💡 Hint (−1 pt)</button>
-    <button class="btn btn-ghost btn-sm" id="btn-answer">🔓 Show Answer</button>
-    <button class="btn btn-ghost btn-sm" id="btn-skip" style="display:none;">⏭ Skip (<span id="skip-count">3</span>)</button>
-    <button class="btn btn-primary" id="btn-next">Next ▶</button>
+  <!-- ROW: Controls -->
+  <div class="game-row-ctrl">
+    <div class="ctrl-row">
+      <button class="btn btn-ghost btn-sm" id="btn-hint">💡 Hint (−1 pt)</button>
+      <button class="btn btn-ghost btn-sm" id="btn-answer">🔓 Show Answer</button>
+      <button class="btn btn-ghost btn-sm" id="btn-skip" style="display:none;">⏭ Skip (<span id="skip-count">3</span>)</button>
+      <button class="btn btn-primary" id="btn-next">Next ▶</button>
+    </div>
+  </div>
+
+  </div><!-- /game-layout -->
+
+  <!-- Bonus x2 badge — fixed beside timer, not in flow -->
+  <div class="bonus-banner hidden" id="bonus-banner">
+    <div class="bonus-word">BONUS</div>
+    <div class="bonus-num">×2</div>
   </div>
 </div><!-- /screen-game -->
 
@@ -905,6 +946,7 @@ function loadQ(){
 
   // TA: cycle through queue infinitely until taTimer fires
   if(cfg.mode==='timeAttack'){
+    if(!taActive) return; // guard: TA ended, ignore stale calls
     if(qIdx>=queue.length){
       // Reshuffle and restart — avoid repeating last question
       const lastId=queue[queue.length-1]?.id;
@@ -960,6 +1002,7 @@ function loadQ(){
   document.getElementById('ans-box').classList.add('hidden');
   document.getElementById('hint-box').classList.add('hidden');
   document.getElementById('btn-hint').disabled=!currentQ.note;
+  document.getElementById('btn-answer').style.display=''; // restore for each new question
   document.getElementById('bonus-banner').classList.add('hidden');
 
   const haBan=document.getElementById('ha-banner');
@@ -987,7 +1030,7 @@ function loadQ(){
       }
       showAnswer();
       flashTimeUp();
-      setTimeout(loadQ, 2200);
+      setTimeout(()=>loadQ(), 2200);
     });
   }
 }
@@ -1040,9 +1083,12 @@ function buildEquation(){
 function showAnswer(){
   stopPerQTimer();
   document.getElementById('bonus-banner').classList.add('hidden');
+  document.getElementById('hint-box').classList.add('hidden'); // clear hint when answer shows
   document.getElementById('ans-box').textContent=currentQ.answer;
   document.getElementById('ans-box').classList.remove('hidden');
-  renderTeamBtns(); // refresh to show post-answer state
+  // Hide Show Answer button once answer is visible
+  document.getElementById('btn-answer').style.display='none';
+  renderTeamBtns();
 }
 
 document.getElementById('btn-hint').addEventListener('click',function(){
@@ -1056,7 +1102,7 @@ document.getElementById('btn-answer').addEventListener('click',function(){
   showAnswer();
   // TA/HA: auto-advance after showing answer
   if(cfg.mode==='timeAttack'||cfg.mode==='heartAttack'){
-    setTimeout(loadQ,1200);
+    setTimeout(()=>{ if(cfg.mode==='heartAttack'||(cfg.mode==='timeAttack'&&taActive)) loadQ(); },1200);
   }
 });
 
@@ -1131,7 +1177,7 @@ function renderTeamBtns(){
       if(cfg.mode==='timeAttack'||cfg.mode==='heartAttack'){
         stopPerQTimer();
         showAnswer();
-        setTimeout(loadQ,1500);
+        setTimeout(()=>{ if(cfg.mode==='heartAttack'||(cfg.mode==='timeAttack'&&taActive)) loadQ(); },1500);
       }
     });
   });
@@ -1156,21 +1202,28 @@ function renderScoreBar(hi){
 // ═══════════════════════════════════════════
 let taTimerInterval=null;
 let taTimeRemaining=0;
+let taActive=false; // guard: prevents stale setTimeout(loadQ) from firing after TA ends
 
 function waitForNextTeam(){
-  // Stop any running TA timer from previous player
+  taActive=false;
   clearInterval(taTimerInterval); taTimerInterval=null;
   document.getElementById('hub-timer').classList.add('hidden');
   document.getElementById('hub-timer').classList.remove('warn');
   stopPerQTimer();
+  // Always remove any leftover start row
+  document.querySelectorAll('#ta-start-row').forEach(el=>el.remove());
 
   const ti=taPlaySeq[taTeamIndex];
-  const tDiff=cfg.taPlayerDiff[ti]||'normal';
+  // Diff display: handle Set type
+  const diffSet=cfg.taPlayerDiff[ti];
+  const diffLabel=(diffSet instanceof Set && diffSet.size>0)
+    ?[...diffSet].map(d=>d.charAt(0).toUpperCase()+d.slice(1)).join(', ')
+    :'Normal';
   document.getElementById('eq-wrap').innerHTML=`
     <div class="ta-wait">
       <strong style="color:${TEAM_COLORS[ti]}">${cfg.teamNames[ti]}</strong>
       Ready? Press Start when set.<br>
-      <span class="ta-diff-info">Difficulty: ${tDiff.charAt(0).toUpperCase()+tDiff.slice(1)}</span>
+      <span class="ta-diff-info">Difficulty: ${diffLabel}</span>
     </div>`;
   document.getElementById('ans-box').classList.add('hidden');
   document.getElementById('hint-box').classList.add('hidden');
@@ -1178,9 +1231,9 @@ function waitForNextTeam(){
   document.getElementById('ha-banner').classList.add('hidden');
   document.getElementById('bonus-banner').classList.add('hidden');
   document.getElementById('btn-next').style.display='none';
+  document.getElementById('btn-skip').style.display='none';
   renderScoreBar();
 
-  // Replace btn-next with a Start button inline
   const startRow=document.createElement('div');
   startRow.id='ta-start-row';
   startRow.style.cssText='display:flex;justify-content:center;margin-top:14px;';
@@ -1190,8 +1243,8 @@ function waitForNextTeam(){
   startBtn.textContent='▶ Start '+cfg.teamNames[ti];
   startBtn.addEventListener('click',function(){
     startRow.remove();
-    taSkipsLeft=3; // reset 3 skips for this player
-    buildQueue(); // fresh shuffled queue for this player
+    taSkipsLeft=3;
+    buildQueue();
     taTimeRemaining=cfg.totalSec;
     startTACountdown();
     loadQ();
@@ -1201,6 +1254,7 @@ function waitForNextTeam(){
 }
 
 function startTACountdown(){
+  taActive=true;
   clearInterval(taTimerInterval);
   const el=document.getElementById('hub-timer');
   el.classList.remove('hidden','warn');
@@ -1233,6 +1287,7 @@ function renderTATime(el){
 }
 
 function advanceTATeam(){
+  taActive=false;
   clearInterval(taTimerInterval); taTimerInterval=null;
   stopPerQTimer();
   // Remove leftover start row if any
