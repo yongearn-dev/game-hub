@@ -582,7 +582,7 @@ const cfg={
 // ═══════════════════════════════════════════
 let allQ=[],fullPool=[],usedIds=new Set();
 let queue=[],qIdx=0,currentQ=null,hintUsed=false,currentPts=0;
-let scores=[],activeTeam=0,timerInterval=null,questionStartTime=0;
+let scores=[],activeTeam=0,questionStartTime=0;
 let currentRound=1,taTeamIndex=0,taPlaySeq=[];
 let haCurrentTarget=0,haDeducted=false;
 let scoredTeams=new Set();
@@ -824,11 +824,15 @@ function refreshTAPlayerDiff(){
   });
 }
 
-// Drag-to-reorder play order
 function buildDragOrder(){
   const row=document.getElementById('ta-drag-row');
-  const names=Array.from({length:cfg.teams},(_,i)=>cfg.teamNames[i]||'Team '+(i+1));
-  if(!cfg.taPlayOrder.length||cfg.taPlayOrder.length!==cfg.teams) cfg.taPlayOrder=[...Array(cfg.teams).keys()];
+  if(!row) return;
+  const n=cfg.teams;
+  // Always reinitialize if length doesn't match
+  if(cfg.taPlayOrder.length!==n){
+    cfg.taPlayOrder=Array.from({length:n},(_,i)=>i);
+  }
+  const names=Array.from({length:n},(_,i)=>cfg.teamNames[i]||'Player '+(i+1));
   renderDragChips(row,names);
 }
 function renderDragChips(row,names){
@@ -866,44 +870,65 @@ document.getElementById('start-btn').addEventListener('click',function(){
   activeTeam=0; currentRound=1; usedIds=new Set();
   taTeamIndex=0; taCorrectCount=0; taRemainingAtEnd=0;
   buildQueue(); qIdx=0;
-  taPlaySeq=cfg.taOrder==='custom'&&cfg.taPlayOrder.length===cfg.teams
-    ?[...cfg.taPlayOrder]:[...Array(cfg.teams).keys()];
+  // Build TA play sequence from drag order or default sequential
+  if(cfg.taOrder==='custom'&&cfg.taPlayOrder.length===cfg.teams){
+    taPlaySeq=[...cfg.taPlayOrder];
+  } else {
+    taPlaySeq=[...Array(cfg.teams).keys()];
+  }
   showScreen('game');
   if(cfg.mode==='timeAttack') waitForNextTeam();
   else loadQ();
 });
 
 // ═══════════════════════════════════════════
-// QUEUE BUILDER — no-repeat within session
+// QUEUE BUILDER
 // ═══════════════════════════════════════════
 function buildQueue(){
-  // For TA, filter by the current active player's difficulty setting
   let pool=fullPool;
   if(cfg.mode==='timeAttack'){
+    // TA: filter by this player's difficulty if set
     const tDiff=cfg.taPlayerDiff[taPlaySeq[taTeamIndex]]||null;
-    if(tDiff) pool=fullPool.filter(q=>q.difficulty===tDiff);
-    if(!pool.length) pool=fullPool;
+    if(tDiff){ const p=fullPool.filter(q=>q.difficulty===tDiff); if(p.length) pool=p; }
+    // TA gets ALL available questions (time is the limit, not question count)
+    // Shuffle full pool for this player
+    const shuffled=[...pool];
+    shuffle(shuffled);
+    queue=shuffled;
+    qIdx=0;
+    return;
   }
+  // Standard / HA: pick unseen questions up to questionsPerRound
   let unseen=pool.filter(q=>!usedIds.has(q.id));
   if(!unseen.length){ usedIds.clear(); unseen=[...pool]; }
   shuffle(unseen);
   const n=cfg.questionsPerRound===999?unseen.length:Math.min(cfg.questionsPerRound,unseen.length);
   queue=unseen.slice(0,n);
+  qIdx=0;
 }
 
 // ═══════════════════════════════════════════
 // LOAD QUESTION
+// KEY: TA mode NEVER touches the countdown timer (taTimer).
+//      stopPerQTimer() only stops Standard/HA per-question timers.
 // ═══════════════════════════════════════════
 function loadQ(){
-  stopTimer();
-  if(qIdx>=queue.length){
-    if(cfg.mode==='timeAttack'){
-      // TA: questions ran out before timer — just rebuild and continue
-      buildQueue(); qIdx=0;
-      if(!queue.length){ advanceTATeam(); return; }
-      // fall through to load next question
-    } else {
-      // Standard / HA: end of round
+  stopPerQTimer(); // ONLY stops per-question timer, never TA countdown
+
+  // TA: cycle through queue infinitely until taTimer fires
+  if(cfg.mode==='timeAttack'){
+    if(qIdx>=queue.length){
+      // Reshuffle and restart — avoid repeating last question
+      const lastId=queue[queue.length-1]?.id;
+      shuffle(queue);
+      if(queue[0]?.id===lastId && queue.length>1){
+        const tmp=queue[0]; queue[0]=queue[1]; queue[1]=tmp;
+      }
+      qIdx=0;
+    }
+  } else {
+    // Standard / HA: end of round check
+    if(qIdx>=queue.length){
       if(currentRound<cfg.rounds){
         showRoundTransition(currentRound+1);
       } else { endGame(); }
@@ -912,7 +937,7 @@ function loadQ(){
   }
 
   currentQ=queue[qIdx]; qIdx++;
-  usedIds.add(currentQ.id);
+  if(cfg.mode!=='timeAttack') usedIds.add(currentQ.id);
   hintUsed=false;
   scoredTeams=new Set();
   haDeducted=false;
@@ -926,14 +951,19 @@ function loadQ(){
     :currentQ.difficulty;
   currentPts=DIFF_SCORE[diff]||1;
 
-  document.getElementById('q-bar').style.width=((qIdx-1)/queue.length*100)+'%';
-  document.getElementById('q-counter').textContent='Q '+qIdx+' / '+queue.length;
-  document.getElementById('round-badge').textContent='Round '+currentRound+(cfg.rounds>1?' / '+cfg.rounds:'');
+  // ── UI updates ──
+  const qTotal=cfg.mode==='timeAttack'?'∞':queue.length;
+  document.getElementById('q-bar').style.width=
+    cfg.mode==='timeAttack'?'100%':((qIdx-1)/queue.length*100)+'%';
+  document.getElementById('q-counter').textContent='Q '+qIdx+' / '+qTotal;
+  document.getElementById('round-badge').textContent=
+    'Round '+currentRound+(cfg.rounds>1?' / '+cfg.rounds:'');
   const db=document.getElementById('q-diff');
   db.textContent=diff.charAt(0).toUpperCase()+diff.slice(1)+' +'+currentPts;
   db.className='q-diff-badge diff-'+diff;
   const unseen=fullPool.filter(q=>!usedIds.has(q.id)).length;
-  document.getElementById('q-unseen').textContent=unseen+' unseen';
+  document.getElementById('q-unseen').textContent=
+    cfg.mode==='timeAttack'?'':unseen+' unseen';
 
   document.getElementById('ans-box').classList.add('hidden');
   document.getElementById('hint-box').classList.add('hidden');
@@ -951,13 +981,13 @@ function loadQ(){
   renderScoreBar();
   renderTeamBtns();
 
-  // Per-question timers (Standard + HA only; TA has its own running total timer)
+  // ── Start per-question timer (Standard + HA only) ──
   if(cfg.mode==='standard' && cfg.perQuestionSec>0){
     document.getElementById('bonus-banner').classList.remove('hidden');
-    startTimer(cfg.perQuestionSec,()=>showAnswer());
+    startPerQTimer(cfg.perQuestionSec,()=>showAnswer());
   }
   if(cfg.mode==='heartAttack'){
-    startTimer(cfg.haSec,()=>{
+    startPerQTimer(cfg.haSec,()=>{
       if(!haDeducted){
         haDeducted=true;
         scores[haCurrentTarget]=Math.max(0,(scores[haCurrentTarget]||0)-1);
@@ -965,6 +995,7 @@ function loadQ(){
       }
       showAnswer();
       flashTimeUp();
+      setTimeout(loadQ, 2200);
     });
   }
 }
@@ -1015,12 +1046,11 @@ function buildEquation(){
 // ANSWER / HINT
 // ═══════════════════════════════════════════
 function showAnswer(){
-  stopTimer();
+  stopPerQTimer();
   document.getElementById('bonus-banner').classList.add('hidden');
   document.getElementById('ans-box').textContent=currentQ.answer;
   document.getElementById('ans-box').classList.remove('hidden');
-  // Update buttons to show 0 pts (time elapsed)
-  renderTeamBtns();
+  renderTeamBtns(); // refresh to show post-answer state
 }
 
 document.getElementById('btn-hint').addEventListener('click',function(){
@@ -1029,11 +1059,19 @@ document.getElementById('btn-hint').addEventListener('click',function(){
   document.getElementById('hint-box').classList.remove('hidden');
   if(!hintUsed){ currentPts=Math.max(0,currentPts-1); hintUsed=true; renderTeamBtns(); }
 });
-document.getElementById('btn-answer').addEventListener('click',showAnswer);
+
+document.getElementById('btn-answer').addEventListener('click',function(){
+  showAnswer();
+  // TA/HA: auto-advance after showing answer
+  if(cfg.mode==='timeAttack'||cfg.mode==='heartAttack'){
+    setTimeout(loadQ,1200);
+  }
+});
+
+// Next button: Standard mode only (TA/HA auto-advance)
 document.getElementById('btn-next').addEventListener('click',function(){
-  if(cfg.mode==='timeAttack'){
-    loadQ(); // timer still running from startTATeam
-  } else { loadQ(); }
+  if(cfg.mode==='standard') loadQ();
+  // TA/HA Next is hidden or disabled during gameplay
 });
 
 // ═══════════════════════════════════════════
@@ -1043,18 +1081,16 @@ function renderTeamBtns(){
   const elapsed=(Date.now()-questionStartTime)/1000;
   const bonusActive=cfg.mode==='standard'&&cfg.perQuestionSec>0&&elapsed<10;
   const displayPts=bonusActive?currentPts*2:currentPts;
-
-  // Hide bonus banner if time passed 10s
   if(!bonusActive) document.getElementById('bonus-banner').classList.add('hidden');
 
+  // Show/hide Next button: only Standard mode uses it
+  document.getElementById('btn-next').style.display=
+    cfg.mode==='standard'?'':'none';
+
   let teamsToShow;
-  if(cfg.mode==='timeAttack'){
-    teamsToShow=[taPlaySeq[taTeamIndex]]; // only active team
-  } else if(cfg.mode==='heartAttack'){
-    teamsToShow=[haCurrentTarget]; // only target player
-  } else {
-    teamsToShow=Array.from({length:cfg.teams},(_,i)=>i);
-  }
+  if(cfg.mode==='timeAttack')    teamsToShow=[taPlaySeq[taTeamIndex]];
+  else if(cfg.mode==='heartAttack') teamsToShow=[haCurrentTarget];
+  else teamsToShow=Array.from({length:cfg.teams},(_,i)=>i);
 
   document.getElementById('team-btns').innerHTML=teamsToShow.map(i=>`
     <button class="tsb ${scoredTeams.has(i)?'used':''}"
@@ -1073,13 +1109,17 @@ function renderTeamBtns(){
       const pts=bonus?currentPts*2:currentPts;
       scores[ti]=(scores[ti]||0)+pts;
       scoredTeams.add(ti);
-      if(cfg.mode==='heartAttack') haDeducted=true; // answered — no deduction
+      if(cfg.mode==='heartAttack') haDeducted=true;
       renderScoreBar(ti);
       renderTeamBtns();
       playCorrect();
       if(bonus) playBonus();
-      this.style.transform='scale(1.06)';
-      setTimeout(()=>this.style.transform='',220);
+      // TA/HA: show answer then auto-advance after 1.5s
+      if(cfg.mode==='timeAttack'||cfg.mode==='heartAttack'){
+        stopPerQTimer();
+        showAnswer();
+        setTimeout(loadQ,1500);
+      }
     });
   });
 }
@@ -1098,9 +1138,19 @@ function renderScoreBar(hi){
 
 // ═══════════════════════════════════════════
 // TIME ATTACK FLOW
+// taTimer = persistent countdown across questions (never stopped by loadQ)
+// perQTimer = per-question timer for Standard/HA only
 // ═══════════════════════════════════════════
+let taTimerInterval=null;
+let taTimeRemaining=0;
+
 function waitForNextTeam(){
-  stopTimer();
+  // Stop any running TA timer from previous player
+  clearInterval(taTimerInterval); taTimerInterval=null;
+  document.getElementById('hub-timer').classList.add('hidden');
+  document.getElementById('hub-timer').classList.remove('warn');
+  stopPerQTimer();
+
   const ti=taPlaySeq[taTeamIndex];
   const tDiff=cfg.taPlayerDiff[ti]||'normal';
   document.getElementById('eq-wrap').innerHTML=`
@@ -1113,64 +1163,98 @@ function waitForNextTeam(){
   document.getElementById('hint-box').classList.add('hidden');
   document.getElementById('team-btns').innerHTML='';
   document.getElementById('ha-banner').classList.add('hidden');
-  document.getElementById('hub-timer').classList.add('hidden');
-  document.getElementById('hub-timer').classList.remove('warn');
   document.getElementById('bonus-banner').classList.add('hidden');
+  document.getElementById('btn-next').style.display='none';
   renderScoreBar();
 
-  const nb=document.getElementById('btn-next');
-  nb.textContent='▶ Start '+cfg.teamNames[ti];
-  nb.onclick=function(){
-    nb.textContent='Next ▶';
-    nb.onclick=loadQ;
-    buildQueue(); qIdx=0;
+  // Replace btn-next with a Start button inline
+  const startRow=document.createElement('div');
+  startRow.id='ta-start-row';
+  startRow.style.cssText='display:flex;justify-content:center;margin-top:14px;';
+  const startBtn=document.createElement('button');
+  startBtn.className='btn btn-primary';
+  startBtn.style.fontSize='20px';
+  startBtn.textContent='▶ Start '+cfg.teamNames[ti];
+  startBtn.addEventListener('click',function(){
+    startRow.remove();
+    buildQueue(); // fresh shuffled queue for this player
+    taTimeRemaining=cfg.totalSec;
+    startTACountdown();
     loadQ();
-    startTimer(cfg.totalSec,()=>{
+  });
+  startRow.appendChild(startBtn);
+  document.getElementById('screen-game').appendChild(startRow);
+}
+
+function startTACountdown(){
+  clearInterval(taTimerInterval);
+  const el=document.getElementById('hub-timer');
+  el.classList.remove('hidden','warn');
+  renderTATime(el);
+  taTimerInterval=setInterval(()=>{
+    taTimeRemaining--;
+    renderTATime(el);
+    if(taTimeRemaining<=10){ el.classList.add('warn'); playTick(); }
+    if(taTimeRemaining<=0){
+      clearInterval(taTimerInterval); taTimerInterval=null;
+      el.classList.add('hidden'); el.classList.remove('warn');
+      stopPerQTimer();
       flashTimeUp();
       setTimeout(()=>advanceTATeam(),1800);
-    });
-  };
+    }
+  },1000);
+}
+
+function renderTATime(el){
+  const m=Math.floor(taTimeRemaining/60);
+  el.textContent=m>0?m+':'+String(taTimeRemaining%60).padStart(2,'0'):String(Math.max(0,taTimeRemaining));
 }
 
 function advanceTATeam(){
-  stopTimer();
+  clearInterval(taTimerInterval); taTimerInterval=null;
+  stopPerQTimer();
+  // Remove leftover start row if any
+  const sr=document.getElementById('ta-start-row');
+  if(sr) sr.remove();
   taTeamIndex++;
   if(taTeamIndex>=cfg.teams){
-    // All teams done — check rounds
     if(currentRound<cfg.rounds){ currentRound++; taTeamIndex=0; waitForNextTeam(); }
     else endGame();
   } else { waitForNextTeam(); }
 }
 
 // ═══════════════════════════════════════════
-// TIMER
+// TIMERS — TWO SEPARATE SYSTEMS
+// perQTimer: per-question countdown (Standard + HA only)
+// taTimer:   persistent countdown for Time Attack (handled in TA flow above)
 // ═══════════════════════════════════════════
-function startTimer(sec,onEnd){
-  stopTimer();
+let perQTimerInterval=null;
+
+function startPerQTimer(sec,onEnd){
+  stopPerQTimer();
   let r=sec;
   const el=document.getElementById('hub-timer');
   el.classList.remove('hidden','warn');
-  renderTime(el,r);
-  timerInterval=setInterval(()=>{
+  el.textContent=String(r);
+  perQTimerInterval=setInterval(()=>{
     r--;
-    renderTime(el,r);
+    el.textContent=String(Math.max(0,r));
     if(r<=10){ el.classList.add('warn'); playTick(); }
-    if(r<=0){ stopTimer(); onEnd(); }
-    // Update bonus banner live
     if(cfg.mode==='standard'&&cfg.perQuestionSec>0){
       const elapsed=(Date.now()-questionStartTime)/1000;
       if(elapsed>=10) document.getElementById('bonus-banner').classList.add('hidden');
     }
+    if(r<=0){ stopPerQTimer(); onEnd(); }
   },1000);
 }
-function stopTimer(){
-  clearInterval(timerInterval); timerInterval=null;
-  document.getElementById('hub-timer').classList.add('hidden');
-  document.getElementById('hub-timer').classList.remove('warn');
-}
-function renderTime(el,s){
-  const m=Math.floor(s/60);
-  el.textContent=m>0?m+':'+String(s%60).padStart(2,'0'):String(Math.max(0,s));
+
+function stopPerQTimer(){
+  clearInterval(perQTimerInterval); perQTimerInterval=null;
+  // Only hide timer if NOT in TA mode (TA manages its own timer visibility)
+  if(cfg.mode!=='timeAttack'){
+    document.getElementById('hub-timer').classList.add('hidden');
+    document.getElementById('hub-timer').classList.remove('warn');
+  }
 }
 
 // Time's up visual + sound
@@ -1186,10 +1270,38 @@ function flashTimeUp(){
 }
 
 // ═══════════════════════════════════════════
+// ROUND TRANSITION
+// ═══════════════════════════════════════════
+function showRoundTransition(nextRound){
+  stopPerQTimer();
+  showScreen('round');
+  document.getElementById('round-trans-num').textContent=nextRound;
+  document.getElementById('round-trans-num2').textContent=nextRound;
+  // Show current scores
+  const chips=Array.from({length:cfg.teams},(_,i)=>`
+    <div class="round-score-chip">
+      <div class="rs-name" style="color:${TEAM_COLORS[i]}">${cfg.teamNames[i]}</div>
+      <div class="rs-score">${scores[i]}</div>
+    </div>`).join('');
+  document.getElementById('round-trans-scores').innerHTML=chips;
+  // Wire up the start button
+  document.getElementById('round-trans-btn').onclick=function(){
+    currentRound=nextRound;
+    buildQueue();
+    showScreen('game');
+    loadQ();
+  };
+}
+
+// ═══════════════════════════════════════════
 // END GAME
 // ═══════════════════════════════════════════
 function endGame(){
-  stopTimer();
+  clearInterval(taTimerInterval); taTimerInterval=null;
+  stopPerQTimer();
+  // Clean up TA start row if present
+  const sr=document.getElementById('ta-start-row');
+  if(sr) sr.remove();
   showScreen('end');
   playFanfare(); launchConfetti();
   const sorted=Array.from({length:cfg.teams},(_,i)=>({n:cfg.teamNames[i],s:scores[i],i}))
@@ -1204,7 +1316,10 @@ function endGame(){
     </li>`).join('');
 }
 document.getElementById('btn-again').addEventListener('click',()=>{
-  scores=[]; usedIds=new Set(); rebuildPool(); showScreen('setup');
+  scores=[]; usedIds=new Set();
+  clearInterval(taTimerInterval); taTimerInterval=null;
+  stopPerQTimer();
+  rebuildPool(); showScreen('setup');
 });
 
 // ═══════════════════════════════════════════
@@ -1259,8 +1374,9 @@ function launchConfetti(){
 // ═══════════════════════════════════════════
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
 function showScreen(n){
-  ['screen-setup','screen-game','screen-end'].forEach(id=>{
-    document.getElementById(id).style.display=id==='screen-'+n?'block':'none';
+  ['screen-setup','screen-game','screen-end','screen-round'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=id==='screen-'+n?'block':'none';
   });
 }
 </script>
