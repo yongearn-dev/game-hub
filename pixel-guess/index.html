@@ -387,6 +387,8 @@
 "use strict";
 
 // ═══════════ CONSTANTS ═══════════
+const IMAGE_BASE = "https://yongearn-dev.github.io/game-hub/pixel-guess/images/";
+const SHEET_URL  = "https://opensheet.elk.sh/1nmgda-PSW0qNpEnT65HozbrbK4SPoOlfq3WlEIQSgf4/Sheet2";
 const TEAM_COLORS = ['#f5c542','#3498db','#e94560','#2ecc71','#9b59b6','#e67e22'];
 
 // Built-in image library categories
@@ -421,17 +423,21 @@ const BUILTIN_LIBRARY = [
   { answer:'Tower of Babel', category:'Bible Stories', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg/320px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg' },
 ];
 
-// Category metadata
+// Category metadata — keys match sheet's category column exactly
 const CAT_META = {
-  'Animals':      { emoji:'🦁', color:'#2ecc71' },
-  'Fruits':       { emoji:'🍓', color:'#e74c3c' },
-  'Landmarks':    { emoji:'🗼', color:'#3498db' },
-  'Bible People': { emoji:'✝️', color:'#f5c542' },
-  'Bible Stories':{ emoji:'📖', color:'#9b59b6' },
-  'People':       { emoji:'👤', color:'#e67e22' },
-  'Anime':        { emoji:'⛩️', color:'#e94560' },
-  'Movies':       { emoji:'🎬', color:'#1abc9c' },
-  'Other':        { emoji:'🎲', color:'#95a5a6' },
+  // Sheet categories
+  'animal':        { emoji:'🦁', label:'Animals',       color:'#2ecc71' },
+  'fruit':         { emoji:'🍓', label:'Fruits',        color:'#e74c3c' },
+  'cuisine':       { emoji:'🍜', label:'Cuisine',       color:'#e67e22' },
+  'biblecharacter':{ emoji:'✝️', label:'Bible People',  color:'#f5c542' },
+  'biblestory':    { emoji:'📖', label:'Bible Stories', color:'#9b59b6' },
+  // Built-in / upload fallbacks
+  'Landmarks':     { emoji:'🗼', label:'Landmarks',     color:'#3498db' },
+  'People':        { emoji:'👤', label:'People',        color:'#e67e22' },
+  'Anime':         { emoji:'⛩️', label:'Anime',         color:'#e94560' },
+  'Movies':        { emoji:'🎬', label:'Movies',        color:'#1abc9c' },
+  'Uploaded':      { emoji:'📁', label:'Uploaded',      color:'#b0b0c3' },
+  'Other':         { emoji:'🎲', label:'Other',         color:'#95a5a6' },
 };
 
 // ═══════════ STATE ═══════════
@@ -462,37 +468,51 @@ function switchTab(tab) {
 
 // ═══════════ LIBRARY / SHEET ═══════════
 function loadSheet() {
-  const url = document.getElementById('sheet-url-input').value.trim();
-  if (!url) {
-    // Use built-in library
-    sheetData = [];
-    buildCatGrid(BUILTIN_LIBRARY);
-    setLibStatus('ok', 'Using built-in library (' + BUILTIN_LIBRARY.length + ' images).');
-    return;
-  }
-  setLibStatus('loading', 'Loading from Google Sheet…');
+  const url = document.getElementById('sheet-url-input').value.trim() || SHEET_URL;
+  setLibStatus('loading', 'Loading…');
   fetch(url)
-    .then(r => r.json())
+    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
     .then(data => {
       sheetData = data;
-      const combined = [...BUILTIN_LIBRARY, ...data.map(r => ({
-        answer: r.answer || r.Answer || '',
-        category: r.category || r.Category || 'Other',
-        imageUrl: r.imageUrl || r.ImageUrl || r.image_url || ''
-      })).filter(r => r.answer && r.imageUrl)];
-      buildCatGrid(combined);
-      setLibStatus('ok', 'Loaded ' + data.length + ' items from sheet + built-in library.');
+      const sheetItems = data.map(sheetRowToItem).filter(Boolean);
+      const builtin = BUILTIN_LIBRARY.map(item => ({
+        id: item.answer, answer: item.answer,
+        category: item.category, variants: [item.imageUrl],
+      }));
+      buildCatGrid([...builtin, ...sheetItems]);
+      setLibStatus('ok', 'Loaded ' + sheetItems.length + ' questions from sheet.');
     })
-    .catch(err => {
-      setLibStatus('error', 'Failed to load sheet. Using built-in library.');
-      buildCatGrid(BUILTIN_LIBRARY);
+    .catch(() => {
+      setLibStatus('error', 'Failed to load. Check URL.');
     });
 }
 
-// Auto-load built-in library on page load
+// Auto-load: fetch sheet first, fall back to built-in
 window.addEventListener('load', () => {
-  buildCatGrid(BUILTIN_LIBRARY);
-  setLibStatus('ok', 'Built-in library ready (' + BUILTIN_LIBRARY.length + ' images). Add your Google Sheet to expand!');
+  // Pre-fill the sheet URL
+  document.getElementById('sheet-url-input').value = SHEET_URL;
+  setLibStatus('loading', 'Loading question library…');
+  fetch(SHEET_URL)
+    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(data => {
+      sheetData = data;
+      const sheetItems = data.map(sheetRowToItem).filter(Boolean);
+      const builtin = BUILTIN_LIBRARY.map(item => ({
+        id: item.answer, answer: item.answer,
+        category: item.category, variants: [item.imageUrl],
+      }));
+      const combined = [...builtin, ...sheetItems];
+      buildCatGrid(combined);
+      setLibStatus('ok', 'Loaded ' + sheetItems.length + ' questions from sheet + ' + builtin.length + ' built-in.');
+    })
+    .catch(() => {
+      const builtin = BUILTIN_LIBRARY.map(item => ({
+        id: item.answer, answer: item.answer,
+        category: item.category, variants: [item.imageUrl],
+      }));
+      buildCatGrid(builtin);
+      setLibStatus('ok', 'Using built-in library (' + BUILTIN_LIBRARY.length + ' items). Sheet unavailable.');
+    });
 });
 
 function setLibStatus(type, msg) {
@@ -501,13 +521,32 @@ function setLibStatus(type, msg) {
   dot.className = 'lib-dot ' + type;
 }
 
+// Convert a raw sheet row into our internal format
+// Stores all image variants; buildQueue picks one randomly per answer
+function sheetRowToItem(r) {
+  const trim = v => (v||'').toString().trim();
+  const variants = [trim(r.img1), trim(r.img2), trim(r.img3)]
+    .filter(f => f.length > 0)
+    .map(f => f.startsWith('http') ? f : IMAGE_BASE + f);
+  if (!variants.length) return null;
+  return {
+    id:       trim(r.id),
+    answer:   trim(r.answer),
+    category: trim(r.category) || 'Other',
+    variants, // array of image URLs; one picked at queue-build
+  };
+}
+
 function getAllLibItems() {
-  const fromSheet = sheetData.map(r => ({
-    answer: r.answer || r.Answer || '',
-    category: r.category || r.Category || 'Other',
-    imageUrl: r.imageUrl || r.ImageUrl || r.image_url || ''
-  })).filter(r => r.answer && r.imageUrl);
-  return [...BUILTIN_LIBRARY, ...fromSheet];
+  const fromSheet = sheetData.map(sheetRowToItem).filter(Boolean);
+  // Built-in items already have a single imageUrl; wrap as single-variant
+  const builtin = BUILTIN_LIBRARY.map(item => ({
+    id: item.answer,
+    answer: item.answer,
+    category: item.category,
+    variants: [item.imageUrl],
+  }));
+  return [...builtin, ...fromSheet];
 }
 
 function buildCatGrid(items) {
@@ -518,11 +557,11 @@ function buildCatGrid(items) {
   });
   const wrap = document.getElementById('cat-grid-wrap');
   wrap.innerHTML = Object.entries(cats).map(([cat, count]) => {
-    const meta = CAT_META[cat] || { emoji:'🎲', color:'#95a5a6' };
+    const meta = CAT_META[cat] || { emoji:'🎲', label:cat, color:'#95a5a6' };
     return `<div class="cat-card" data-cat="${cat}" onclick="toggleCat('${cat}')">
       <div class="cat-emoji">${meta.emoji}</div>
-      <div class="cat-name">${cat}</div>
-      <div class="cat-count">${count} images</div>
+      <div class="cat-name">${meta.label||cat}</div>
+      <div class="cat-count">${count} questions</div>
     </div>`;
   }).join('');
   document.getElementById('cat-section').style.display = 'block';
@@ -545,7 +584,7 @@ function clearAllCats() { selectedCats.clear(); refreshCatUI(); updateStartBtn()
 function refreshCatUI() {
   document.querySelectorAll('.cat-card').forEach(c => c.classList.toggle('sel', selectedCats.has(c.dataset.cat)));
   const total = getAllLibItems().filter(i => selectedCats.has(i.category||'Other')).length;
-  document.getElementById('sel-count').textContent = total + ' images selected';
+  document.getElementById('sel-count').textContent = total + ' questions selected';
 }
 
 // ═══════════ UPLOAD ═══════════
@@ -651,17 +690,34 @@ function updateStartBtn() {
 }
 
 // ═══════════ BUILD QUEUE ═══════════
+// Each item gets ONE randomly chosen image variant.
+// No answer repeats within a round even if the sheet has multiple images for it.
 function buildQueue() {
-  let pool = [];
+  let items = [];
   if (activeTab === 'library') {
-    pool = getAllLibItems().filter(i => selectedCats.has(i.category||'Other'));
+    items = getAllLibItems().filter(i => selectedCats.has(i.category||'Other'));
   } else {
-    pool = uploadedImages.map(i => ({ answer: i.answer, category:'Uploaded', imageUrl: i.dataUrl }));
+    // Uploaded images — already have a single dataUrl
+    items = uploadedImages.map(i => ({
+      id: i.answer, answer: i.answer,
+      category: 'Uploaded',
+      variants: [i.dataUrl],
+    }));
   }
-  // Shuffle
-  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]; }
-  if (cfg.questionsPerRound !== 999) pool = pool.slice(0, cfg.questionsPerRound);
-  return pool;
+
+  // Shuffle items (each item = one unique answer)
+  for(let i=items.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];
+  }
+  // Trim to round size
+  if (cfg.questionsPerRound !== 999) items = items.slice(0, cfg.questionsPerRound);
+
+  // For each item, pick ONE random variant image
+  return items.map(item => ({
+    answer:   item.answer,
+    category: item.category,
+    imageUrl: item.variants[Math.floor(Math.random() * item.variants.length)],
+  }));
 }
 
 // ═══════════ START GAME ═══════════
@@ -697,8 +753,8 @@ function loadQ() {
   // Category badge
   const catBadge = document.getElementById('q-cat-badge');
   if (q.category) {
-    const meta = CAT_META[q.category] || { emoji:'🎲' };
-    catBadge.textContent = meta.emoji + ' ' + q.category;
+    const meta = CAT_META[q.category] || { emoji:'🎲', label:q.category };
+    catBadge.textContent = meta.emoji + ' ' + (meta.label || q.category);
     catBadge.classList.remove('hidden');
   } else { catBadge.classList.add('hidden'); }
 
@@ -721,33 +777,56 @@ function updatePtsBadge() {
   document.getElementById('pts-badge').style.background = pts > 0 ? 'var(--accent)' : 'rgba(255,255,255,.15)';
 }
 
+// Draw image cover-style: fills canvas, maintains aspect ratio, crops if needed
+function drawCover(ctx, img, W, H) {
+  const imgRatio = img.naturalWidth / img.naturalHeight;
+  const canvasRatio = W / H;
+  let sx=0, sy=0, sw=img.naturalWidth, sh=img.naturalHeight;
+  if (imgRatio > canvasRatio) {
+    // Image wider than canvas → crop sides
+    sw = Math.round(img.naturalHeight * canvasRatio);
+    sx = Math.round((img.naturalWidth - sw) / 2);
+  } else {
+    // Image taller than canvas → crop top/bottom
+    sh = Math.round(img.naturalWidth / canvasRatio);
+    sy = Math.round((img.naturalHeight - sh) / 2);
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+}
+
 function drawPixelated(src, blockSize) {
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = function() {
     const W = canvas.width, H = canvas.height;
-    ctx.clearRect(0,0,W,H);
+    ctx.clearRect(0, 0, W, H);
     if (blockSize <= 1) {
-      ctx.drawImage(img,0,0,W,H);
+      drawCover(ctx, img, W, H);
     } else {
-      const offW = Math.ceil(W/blockSize), offH = Math.ceil(H/blockSize);
+      // Draw cover-cropped at tiny size, then scale up for pixel effect
+      const offW = Math.ceil(W / blockSize);
+      const offH = Math.ceil(H / blockSize);
       const off = document.createElement('canvas');
-      off.width=offW; off.height=offH;
+      off.width = offW; off.height = offH;
       const octx = off.getContext('2d');
-      octx.imageSmoothingEnabled = false;
-      octx.drawImage(img,0,0,offW,offH);
+      octx.imageSmoothingEnabled = true;
+      drawCover(octx, img, offW, offH);
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(off,0,0,W,H);
+      ctx.drawImage(off, 0, 0, W, H);
     }
   };
   img.onerror = function() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='rgba(255,255,255,.05)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='rgba(255,255,255,.3)';
-    ctx.font='bold 24px Rubik,sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText('⚠️ Image could not be loaded',canvas.width/2,canvas.height/2);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,.4)';
+    ctx.font = 'bold 22px Rubik,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚠️ Could not load image', canvas.width/2, canvas.height/2);
+    ctx.font = '14px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,.2)';
+    ctx.fillText(src.split('/').pop(), canvas.width/2, canvas.height/2 + 34);
   };
   img.src = src;
 }
