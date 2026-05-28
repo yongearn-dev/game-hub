@@ -1,355 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>🔍 Pixel Guess</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    :root{
-      --bg:#0d0d1a;--panel:#1a1a2e;--panel2:#16213e;
-      --primary:#f5c542;--primary2:#e0a800;
-      --accent:#e94560;--accent2:#c73652;
-      --green:#2ecc71;--blue:#3498db;--purple:#9b59b6;
-      --text:#ffffff;--text2:#b0b0c3;
-    }
-    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
-    .hidden{display:none!important;}
-    .wrap{max-width:920px;margin:0 auto;padding:20px 16px 60px;}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>🔍 Pixel Guess</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d0d1a;--panel:#1a1a2e;--panel2:#16213e;
+  --primary:#f5c542;--primary2:#e0a800;
+  --accent:#e94560;--accent2:#c73652;
+  --green:#2ecc71;--blue:#3498db;--text:#fff;--text2:#b0b0c3;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.hidden{display:none!important;}
+.wrap{max-width:920px;margin:0 auto;padding:20px 16px 60px;}
+.bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.bg-glow span{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;}
+.bg-glow span:nth-child(1){width:500px;height:500px;background:#533483;top:-150px;left:-150px;}
+.bg-glow span:nth-child(2){width:400px;height:400px;background:#e94560;bottom:-100px;right:-100px;}
 
-    /* BG glow */
-    .bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-    .bg-glow span{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;}
-    .bg-glow span:nth-child(1){width:500px;height:500px;background:#533483;top:-150px;left:-150px;}
-    .bg-glow span:nth-child(2){width:400px;height:400px;background:#e94560;bottom:-100px;right:-100px;}
+/* Page title */
+.page-title{text-align:center;padding:28px 0 24px;position:relative;z-index:1;}
+.page-title .back-btn{position:absolute;left:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:6px;color:var(--text2);font-size:14px;font-weight:700;text-decoration:none;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);transition:all .15s;}
+.page-title .back-btn:hover{background:rgba(255,255,255,.12);color:var(--text);}
+.page-title h1{font-family:'Rubik',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:900;background:linear-gradient(135deg,#a29bfe,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.page-title p{color:var(--text2);margin-top:6px;font-size:15px;}
 
-    /* Page title */
-    .page-title{text-align:center;padding:28px 0 24px;position:relative;z-index:1;}
-    .page-title .back-btn{
-      position:absolute;left:0;top:50%;transform:translateY(-50%);
-      display:inline-flex;align-items:center;gap:6px;
-      color:var(--text2);font-size:14px;font-weight:700;text-decoration:none;
-      padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.1);transition:all .15s;
-    }
-    .page-title .back-btn:hover{background:rgba(255,255,255,.12);color:var(--text);}
-    .page-title h1{
-      font-family:'Rubik',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:900;
-      background:linear-gradient(135deg,#a29bfe,#e94560);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    }
-    .page-title p{color:var(--text2);margin-top:6px;font-size:15px;}
+/* Tabs */
+.tab-bar{display:flex;gap:0;background:var(--panel2);border-radius:14px;padding:4px;margin-bottom:20px;position:relative;z-index:1;}
+.tab{flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;color:var(--text2);transition:all .2s;user-select:none;}
+.tab.active{background:var(--panel);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.tab-content{position:relative;z-index:1;}
 
-    /* Tab bar (Source selection) */
-    .tab-bar{display:flex;gap:0;background:var(--panel2);border-radius:14px;padding:4px;margin-bottom:20px;position:relative;z-index:1;}
-    .tab{flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;color:var(--text2);transition:all .2s;user-select:none;}
-    .tab.active{background:var(--panel);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3);}
-    .tab-content{position:relative;z-index:1;}
+/* Sections */
+.section{background:var(--panel);border-radius:18px;border:1px solid rgba(255,255,255,.07);padding:18px 20px;margin-bottom:14px;}
+.section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07);}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+@media(max-width:580px){.settings-grid{grid-template-columns:1fr;}}
 
-    /* Sections */
-    .section{background:var(--panel);border-radius:18px;border:1px solid rgba(255,255,255,.07);padding:18px 20px;margin-bottom:14px;}
-    .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-    .section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07);}
+/* Pills */
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;}
+.pill{padding:7px 14px;border-radius:50px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;color:var(--text2);user-select:none;}
+.pill.sel{background:var(--primary);color:#1a1a00;border-color:var(--primary);}
+.pill:hover:not(.sel){background:rgba(255,255,255,.12);color:var(--text);}
 
-    /* Pills */
-    .pill-row{display:flex;flex-wrap:wrap;gap:8px;}
-    .pill{padding:7px 14px;border-radius:50px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;color:var(--text2);user-select:none;}
-    .pill.sel{background:var(--primary);color:#1a1a00;border-color:var(--primary);}
-    .pill:hover:not(.sel){background:rgba(255,255,255,.12);color:var(--text);}
-    .pill.cat-pill{padding:8px 16px;font-size:14px;}
-    .pill.cat-pill.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+/* Library */
+.lib-status{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel2);border-radius:10px;margin-bottom:14px;font-size:14px;}
+.lib-dot{width:10px;height:10px;border-radius:50%;background:#555;flex-shrink:0;}
+.lib-dot.ok{background:var(--green);}
+.lib-dot.loading{background:var(--primary);animation:blink .8s infinite;}
+.lib-dot.error{background:var(--accent);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.sheet-input-wrap{display:flex;gap:10px;margin-bottom:10px;}
+.sheet-input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none;transition:border-color .15s;}
+.sheet-input:focus{border-color:var(--primary);}
+.sheet-input::placeholder{color:var(--text2);}
 
-    /* Grid layout for settings */
-    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
-    @media(max-width:580px){.settings-grid{grid-template-columns:1fr;}}
+/* Category grid */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px;}
+.cat-card{padding:12px 14px;background:var(--panel2);border-radius:12px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .15s;text-align:center;user-select:none;}
+.cat-card.sel{border-color:var(--accent);background:rgba(233,69,96,.12);}
+.cat-card:hover:not(.sel){border-color:rgba(255,255,255,.2);}
+.cat-card .cat-emoji{font-size:24px;margin-bottom:4px;}
+.cat-card .cat-name{font-size:13px;font-weight:700;color:var(--text2);}
+.cat-card.sel .cat-name{color:var(--text);}
+.cat-card .cat-count{font-size:11px;color:var(--text2);margin-top:2px;}
 
-    /* Library tab */
-    .lib-status{
-      display:flex;align-items:center;gap:10px;padding:12px 16px;
-      background:var(--panel2);border-radius:10px;margin-bottom:14px;font-size:14px;
-    }
-    .lib-dot{width:10px;height:10px;border-radius:50%;background:#555;flex-shrink:0;}
-    .lib-dot.ok{background:var(--green);}
-    .lib-dot.loading{background:var(--primary);animation:blink .8s infinite;}
-    .lib-dot.error{background:var(--accent);}
-    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+/* Upload */
+.drop-zone{border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;color:var(--text2);font-size:15px;}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--primary);background:rgba(245,197,66,.05);color:var(--text);}
+.drop-icon{font-size:32px;display:block;margin-bottom:8px;}
+.img-queue{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:14px;}
+.img-thumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--panel2);cursor:pointer;border:1px solid rgba(255,255,255,.06);}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-ans{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.78);font-size:11px;padding:4px 6px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.img-no-ans{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);font-size:10px;padding:3px 6px;text-align:center;color:rgba(255,255,255,.5);font-style:italic;}
+.img-rm{position:absolute;top:4px;right:4px;width:20px;height:20px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:opacity .15s;z-index:2;}
+.img-thumb:hover .img-rm{opacity:1;}
 
-    .sheet-input-wrap{display:flex;gap:10px;margin-bottom:14px;}
-    .sheet-input{
-      flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
-      border-radius:10px;padding:10px 14px;color:var(--text);
-      font-family:'Nunito',sans-serif;font-size:14px;outline:none;transition:border-color .15s;
-    }
-    .sheet-input:focus{border-color:var(--primary);}
-    .sheet-input::placeholder{color:var(--text2);}
+/* Answer modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:9000;}
+.modal-box{background:var(--panel);border-radius:20px;padding:24px 28px;width:min(420px,92vw);border:1px solid rgba(255,255,255,.12);}
+.modal-box h3{margin-bottom:10px;font-size:18px;font-family:'Rubik',sans-serif;}
+.modal-box img{width:100%;border-radius:10px;margin-bottom:12px;object-fit:contain;max-height:180px;background:var(--panel2);}
+.modal-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px 14px;color:var(--text);font-size:16px;font-family:'Nunito',sans-serif;outline:none;margin-bottom:10px;display:block;}
+.modal-inp:focus{border-color:var(--primary);}
+.modal-skip-note{font-size:12px;color:var(--text2);margin-bottom:12px;}
+.modal-btns{display:flex;gap:10px;}
 
-    .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:14px;}
-    .cat-card{
-      padding:12px 14px;background:var(--panel2);border-radius:12px;
-      border:1px solid rgba(255,255,255,.08);cursor:pointer;
-      transition:all .15s;text-align:center;user-select:none;
-    }
-    .cat-card.sel{border-color:var(--accent);background:rgba(233,69,96,.12);}
-    .cat-card:hover:not(.sel){border-color:rgba(255,255,255,.2);}
-    .cat-card .cat-emoji{font-size:24px;margin-bottom:4px;}
-    .cat-card .cat-name{font-size:13px;font-weight:700;color:var(--text2);}
-    .cat-card.sel .cat-name{color:var(--text);}
-    .cat-card .cat-count{font-size:11px;color:var(--text2);margin-top:2px;}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 24px;font-family:'Rubik',sans-serif;font-size:16px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-decoration:none;}
+.btn:hover{transform:translateY(-2px);}
+.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.btn-primary{background:var(--primary);color:#1a1a00;box-shadow:0 5px 0 var(--primary2);}
+.btn-ghost{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.14);}
+.btn-ghost:hover{background:rgba(255,255,255,.14);}
+.btn-sm{padding:8px 16px;font-size:14px;}
 
-    /* Upload tab */
-    .drop-zone{
-      border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:28px;
-      text-align:center;cursor:pointer;transition:all .2s;color:var(--text2);font-size:15px;
-    }
-    .drop-zone:hover,.drop-zone.drag-over{border-color:var(--primary);background:rgba(245,197,66,.05);color:var(--text);}
-    .drop-icon{font-size:36px;display:block;margin-bottom:8px;}
-    .img-queue{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;margin-top:14px;}
-    .img-thumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--panel2);cursor:pointer;border:1px solid rgba(255,255,255,.06);}
-    .img-thumb img{width:100%;height:100%;object-fit:cover;}
-    .img-ans{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.78);font-size:11px;padding:4px 6px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .img-rm{position:absolute;top:4px;right:4px;width:20px;height:20px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:opacity .15s;z-index:2;}
-    .img-thumb:hover .img-rm{opacity:1;}
+/* Player inputs */
+.team-inputs{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.team-row{display:flex;align-items:center;gap:10px;}
+.team-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
+.team-inp{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none;}
+.team-inp:focus{border-color:var(--primary);}
+.cta-row{display:flex;gap:10px;justify-content:center;padding-top:8px;position:relative;z-index:1;}
 
-    /* Answer modal */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:9000;}
-    .modal-box{background:var(--panel);border-radius:20px;padding:24px 28px;width:min(400px,92vw);border:1px solid rgba(255,255,255,.12);}
-    .modal-box h3{margin-bottom:10px;font-size:18px;font-family:'Rubik',sans-serif;}
-    .modal-box img{width:100%;border-radius:10px;margin-bottom:12px;object-fit:contain;max-height:180px;background:var(--panel2);}
-    .modal-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px 14px;color:var(--text);font-size:16px;font-family:'Nunito',sans-serif;outline:none;margin-bottom:12px;display:block;}
-    .modal-inp:focus{border-color:var(--primary);}
-    .modal-btns{display:flex;gap:10px;}
+/* ── GAME SCREEN ── */
+#screen-game{display:none;}
+.game-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.q-counter{font-size:13px;color:var(--text2);font-weight:700;}
+.reveal-badge{font-family:'Rubik',sans-serif;font-size:12px;font-weight:700;color:var(--primary);background:rgba(245,197,66,.12);padding:4px 12px;border-radius:20px;}
 
-    /* Buttons */
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 24px;font-family:'Rubik',sans-serif;font-size:16px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-decoration:none;}
-    .btn:hover{transform:translateY(-2px);}
-    .btn:active{transform:translateY(1px);}
-    .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
-    .btn-primary{background:var(--primary);color:#1a1a00;box-shadow:0 5px 0 var(--primary2);}
-    .btn-accent{background:var(--accent);color:#fff;box-shadow:0 5px 0 var(--accent2);}
-    .btn-ghost{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.14);}
-    .btn-ghost:hover{background:rgba(255,255,255,.14);}
-    .btn-sm{padding:8px 16px;font-size:14px;}
+/* Score bar */
+.score-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+.chip{background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:50px;padding:7px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;transition:transform .2s;}
+.chip.scored{transform:scale(1.06);border-color:var(--primary);}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;}
 
-    /* Team inputs */
-    .team-inputs{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
-    .team-row{display:flex;align-items:center;gap:10px;}
-    .team-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
-    .team-inp{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none;}
-    .team-inp:focus{border-color:var(--primary);}
+/* Canvas */
+.canvas-wrap{position:relative;display:flex;justify-content:center;margin:0 auto 12px;max-width:640px;}
+#pixel-canvas{width:100%;max-width:640px;border-radius:16px;border:2px solid rgba(255,255,255,.07);display:block;image-rendering:pixelated;background:var(--panel);}
+.pts-badge{position:absolute;top:12px;right:12px;background:var(--accent);color:#fff;font-family:'Rubik',sans-serif;font-weight:900;font-size:19px;padding:5px 13px;border-radius:50px;z-index:5;transition:all .3s;box-shadow:0 3px 10px rgba(233,69,96,.4);}
 
-    .cta-row{display:flex;gap:10px;justify-content:center;padding-top:8px;position:relative;z-index:1;}
+/* Answer overlay — bottom-right, small white text, no dark overlay */
+.ans-overlay{
+  position:absolute;
+  bottom:14px;right:14px;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s;
+  z-index:6;
+  max-width:60%;
+  text-align:right;
+}
+.ans-overlay.show{opacity:1;pointer-events:auto;}
+.ans-text{
+  font-family:'Rubik',sans-serif;
+  font-size:clamp(14px,2.5vw,22px);
+  font-weight:900;
+  color:#fff;
+  line-height:1.2;
+  text-shadow:
+    1px 1px 0 rgba(0,0,0,.9),
+    -1px 1px 0 rgba(0,0,0,.9),
+    1px -1px 0 rgba(0,0,0,.9),
+    -1px -1px 0 rgba(0,0,0,.9),
+    0 2px 8px rgba(0,0,0,.8);
+}
 
-    /* ── GAME SCREEN ── */
-    #screen-game{display:none;}
-    .game-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-    .q-counter{font-size:13px;color:var(--text2);font-weight:700;}
-    .reveal-badge{font-family:'Rubik',sans-serif;font-size:12px;font-weight:700;color:var(--primary);background:rgba(245,197,66,.12);padding:4px 12px;border-radius:20px;}
+/* Progress */
+.progress-wrap{height:5px;background:rgba(255,255,255,.07);border-radius:3px;margin-bottom:12px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe);border-radius:3px;width:0;transition:width .5s;}
 
-    /* Score chips */
-    .score-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
-    .chip{background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:50px;padding:7px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;transition:transform .2s;}
-    .chip.scored{transform:scale(1.06);border-color:var(--primary);}
-    .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;}
+/* Category badge */
+.q-cat-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--text2);margin-bottom:10px;}
 
-    /* Canvas */
-    .canvas-wrap{position:relative;display:flex;justify-content:center;margin:0 auto 12px;max-width:640px;}
-    #pixel-canvas{width:100%;max-width:640px;border-radius:16px;border:2px solid rgba(255,255,255,.07);display:block;image-rendering:pixelated;background:var(--panel);}
-    .pts-badge{position:absolute;top:12px;right:12px;background:var(--accent);color:#fff;font-family:'Rubik',sans-serif;font-weight:900;font-size:19px;padding:5px 13px;border-radius:50px;z-index:5;transition:all .3s;box-shadow:0 3px 10px rgba(233,69,96,.4);}
-    .ans-overlay{position:absolute;inset:0;background:rgba(13,13,26,.88);display:flex;align-items:center;justify-content:center;border-radius:16px;opacity:0;pointer-events:none;transition:opacity .35s;}
-    .ans-overlay.show{opacity:1;pointer-events:auto;}
-    .ans-text{font-family:'Rubik',sans-serif;font-size:clamp(26px,6vw,52px);font-weight:900;color:var(--primary);text-align:center;padding:16px 24px;animation:pop .5s;}
+/* Player scoring buttons */
+.team-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0;}
+.tsb{padding:13px 22px;border-radius:50px;border:none;font-family:'Rubik',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s;box-shadow:0 4px 0 rgba(0,0,0,.3);}
+.tsb:hover{transform:translateY(-2px);}
+.tsb:active{transform:translateY(1px);}
+.tsb:disabled{opacity:.35;cursor:not-allowed;transform:none;text-decoration:line-through;}
 
-    /* Progress */
-    .progress-wrap{height:5px;background:rgba(255,255,255,.07);border-radius:3px;margin-bottom:12px;overflow:hidden;}
-    .progress-bar{height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe);border-radius:3px;width:0;transition:width .5s;}
+.ctrl-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
-    /* Category label */
-    .q-cat-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--text2);margin-bottom:10px;}
+/* Timer */
+.hub-timer{position:fixed;top:16px;right:20px;font-family:'Rubik',sans-serif;font-size:46px;font-weight:900;background:var(--panel);color:var(--text);padding:7px 18px;border-radius:14px;z-index:999;min-width:100px;text-align:center;border:2px solid rgba(255,255,255,.1);}
+.hub-timer.warn{color:var(--accent);border-color:var(--accent);animation:pulse .6s infinite;}
 
-    /* Team scoring buttons */
-    .team-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0;}
-    .tsb{padding:13px 22px;border-radius:50px;border:none;font-family:'Rubik',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s;box-shadow:0 4px 0 rgba(0,0,0,.3);}
-    .tsb:hover{transform:translateY(-2px);}
-    .tsb:active{transform:translateY(1px);}
-    .tsb:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+/* END SCREEN */
+#screen-end{display:none;text-align:center;padding-top:20px;}
+#screen-end h2{font-family:'Rubik',sans-serif;font-size:40px;font-weight:900;background:linear-gradient(135deg,#f5c542,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+#screen-end .sub{color:var(--text2);margin-bottom:24px;}
+.lb{list-style:none;max-width:460px;margin:0 auto 28px;background:var(--panel);border-radius:18px;padding:18px 20px;border:1px solid rgba(255,255,255,.07);}
+.lb li{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:4px 0;background:var(--panel2);border-radius:10px;font-size:16px;font-weight:700;animation:slideIn .4s both;}
+.lb li:nth-child(1){background:rgba(245,197,66,.18);border:1px solid rgba(245,197,66,.35);}
+.lb li:nth-child(2){background:rgba(180,180,200,.1);}
+.lb li:nth-child(3){background:rgba(205,127,50,.12);}
+.lb-score{margin-left:auto;color:var(--primary);font-size:20px;}
 
-    .ctrl-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-
-    /* Timer */
-    .hub-timer{position:fixed;top:16px;right:20px;font-family:'Rubik',sans-serif;font-size:46px;font-weight:900;background:var(--panel);color:var(--text);padding:7px 18px;border-radius:14px;z-index:999;min-width:100px;text-align:center;border:2px solid rgba(255,255,255,.1);}
-    .hub-timer.warn{color:var(--accent);border-color:var(--accent);animation:pulse .6s infinite;}
-
-    /* END SCREEN */
-    #screen-end{display:none;text-align:center;padding-top:20px;}
-    #screen-end h2{font-family:'Rubik',sans-serif;font-size:40px;font-weight:900;background:linear-gradient(135deg,#f5c542,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
-    #screen-end .sub{color:var(--text2);margin-bottom:24px;}
-    .lb{list-style:none;max-width:460px;margin:0 auto 28px;background:var(--panel);border-radius:18px;padding:18px 20px;border:1px solid rgba(255,255,255,.07);}
-    .lb li{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:4px 0;background:var(--panel2);border-radius:10px;font-size:16px;font-weight:700;animation:slideIn .4s both;}
-    .lb li:nth-child(1){background:rgba(245,197,66,.18);border:1px solid rgba(245,197,66,.35);}
-    .lb li:nth-child(2){background:rgba(180,180,200,.1);}
-    .lb li:nth-child(3){background:rgba(205,127,50,.12);}
-    .lb-score{margin-left:auto;color:var(--primary);font-size:20px;}
-
-    /* Animations */
-    @keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-    @keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
-    @keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  </style>
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+</style>
 </head>
 <body>
-
 <div class="bg-glow"><span></span><span></span></div>
-
 <div class="wrap">
 
-<!-- ═══════════════ SETUP SCREEN ═══════════════ -->
+<!-- ══════════ SETUP ══════════ -->
 <div id="screen-setup">
+<div class="page-title">
+  <a href="../index.html" class="back-btn">← Back</a>
+  <h1>🔍 Pixel Guess</h1>
+  <p>Images reveal gradually — buzz in early for maximum points!</p>
+</div>
 
-  <div class="page-title">
-    <a href="../index.html" class="back-btn">← Back</a>
-    <h1>🔍 Pixel Guess</h1>
-    <p>Images reveal gradually — buzz in early for maximum points!</p>
-  </div>
+<!-- Source Tabs -->
+<div class="tab-bar" style="position:relative;z-index:1;">
+  <div class="tab active" id="tab-library" onclick="switchTab('library')">📚 Image Library</div>
+  <div class="tab" id="tab-upload" onclick="switchTab('upload')">📁 Upload Images</div>
+</div>
 
-  <!-- Source Tabs -->
-  <div class="tab-bar" style="position:relative;z-index:1;">
-    <div class="tab active" id="tab-library" onclick="switchTab('library')">📚 Image Library</div>
-    <div class="tab" id="tab-upload" onclick="switchTab('upload')">📁 Upload Images</div>
-  </div>
-
-  <!-- ── LIBRARY TAB ── -->
-  <div id="pane-library" class="tab-content">
-
-    <div class="section">
-      <div class="section-title">Data Source (Google Sheet)</div>
-      <div class="lib-status" id="lib-status">
-        <div class="lib-dot" id="lib-dot"></div>
-        <span id="lib-status-text">Enter your Google Sheet URL below and click Load.</span>
-      </div>
-      <div class="sheet-input-wrap">
-        <input class="sheet-input" id="sheet-url-input" type="text"
-          placeholder="https://opensheet.elk.sh/YOUR_SHEET_ID/Sheet1"
-          value=""/>
-        <button class="btn btn-ghost btn-sm" id="load-sheet-btn" onclick="loadSheet()">Load</button>
-      </div>
-      <p style="font-size:12px;color:var(--text2);line-height:1.6;">
-        💡 Use <a href="https://opensheet.elk.sh" target="_blank" style="color:var(--primary)">opensheet.elk.sh</a> to make your Google Sheet publicly accessible as JSON.<br>
-        Sheet columns needed: <code style="background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px;">id, category, answer, imageUrl</code> (imageUrl = full URL or filename if using /images/ folder)
-      </p>
+<!-- LIBRARY PANE -->
+<div id="pane-library" class="tab-content">
+  <div class="section">
+    <div class="section-title">Google Sheet Source</div>
+    <div class="lib-status" id="lib-status">
+      <div class="lib-dot loading" id="lib-dot"></div>
+      <span id="lib-status-text">Loading question library…</span>
     </div>
-
-    <div class="section" id="cat-section" style="display:none;">
-      <div class="section-title">Choose Categories</div>
-      <div id="cat-grid-wrap" class="cat-grid"></div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="btn btn-ghost btn-sm" onclick="selectAllCats()">Select All</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearAllCats()">Clear</button>
-        <span id="sel-count" style="margin-left:auto;font-size:13px;color:var(--text2);align-self:center;"></span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ── UPLOAD TAB ── -->
-  <div id="pane-upload" class="tab-content hidden">
-    <div class="section">
-      <div class="section-title">Upload Your Images <span id="img-count" style="color:var(--primary);font-weight:700;margin-left:4px;"></span></div>
-      <div class="drop-zone" id="drop-zone">
-        <span class="drop-icon">🖼️</span>
-        Click or drag &amp; drop images here<br>
-        <small style="font-size:12px;margin-top:4px;display:block">JPG / PNG / GIF · Each image needs an answer label</small>
-      </div>
-      <input type="file" id="file-input" multiple accept="image/*" style="display:none"/>
-      <div class="img-queue" id="img-queue"></div>
+    <div class="sheet-input-wrap">
+      <input class="sheet-input" id="sheet-url-input" type="text" placeholder="https://opensheet.elk.sh/…"/>
+      <button class="btn btn-ghost btn-sm" onclick="loadSheet()">↺ Reload</button>
     </div>
   </div>
-
-  <!-- Answer Modal -->
-  <div class="modal-overlay hidden" id="ans-modal">
-    <div class="modal-box">
-      <h3>✏️ Set Answer</h3>
-      <img id="modal-preview" src="" alt="preview"/>
-      <input type="text" class="modal-inp" id="modal-inp" placeholder="Type the answer for this image…" maxlength="50"/>
-      <div class="modal-btns">
-        <button class="btn btn-primary" id="modal-ok" style="flex:1">✅ Confirm</button>
-        <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
-      </div>
+  <div class="section" id="cat-section" style="display:none;">
+    <div class="section-title">Categories</div>
+    <div id="cat-grid-wrap" class="cat-grid"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-ghost btn-sm" onclick="selectAllCats()">Select All</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearAllCats()">Clear</button>
+      <span id="sel-count" style="margin-left:auto;font-size:13px;color:var(--text2);align-self:center;"></span>
     </div>
   </div>
+</div>
 
-  <!-- Settings -->
-  <div class="settings-grid">
-    <div class="section">
-      <div class="section-title">Reveal Steps</div>
-      <div class="pill-row" id="steps-opts">
-        <div class="pill" data-val="3">3 steps</div>
-        <div class="pill sel" data-val="5">5 steps</div>
-        <div class="pill" data-val="8">8 steps</div>
-        <div class="pill" data-val="12">12 steps</div>
-      </div>
+<!-- UPLOAD PANE -->
+<div id="pane-upload" class="tab-content hidden">
+  <div class="section">
+    <div class="section-title">Upload Images <span id="img-count" style="color:var(--primary);font-weight:700;margin-left:4px;"></span></div>
+    <div class="drop-zone" id="drop-zone">
+      <span class="drop-icon">🖼️</span>
+      Click or drag &amp; drop — select multiple at once<br>
+      <small style="font-size:12px;margin-top:4px;display:block;">JPG / PNG / GIF · Answer label is optional</small>
     </div>
-    <div class="section">
-      <div class="section-title">Max Points (1st step)</div>
-      <div class="pill-row" id="score-opts">
-        <div class="pill" data-val="5">5 pts</div>
-        <div class="pill sel" data-val="10">10 pts</div>
-        <div class="pill" data-val="20">20 pts</div>
-      </div>
-    </div>
-    <div class="section">
-      <div class="section-title">Deduct per step</div>
-      <div class="pill-row" id="deduct-opts">
-        <div class="pill sel" data-val="1">-1 / step</div>
-        <div class="pill" data-val="2">-2 / step</div>
-        <div class="pill" data-val="0">No deduction</div>
-      </div>
-    </div>
-    <div class="section">
-      <div class="section-title">Questions per round</div>
-      <div class="pill-row" id="q-opts">
-        <div class="pill" data-val="5">5</div>
-        <div class="pill sel" data-val="10">10</div>
-        <div class="pill" data-val="15">15</div>
-        <div class="pill" data-val="999">All</div>
-      </div>
+    <input type="file" id="file-input" multiple accept="image/*" style="display:none"/>
+    <div class="img-queue" id="img-queue"></div>
+  </div>
+</div>
+
+<!-- Answer Modal (optional) -->
+<div class="modal-overlay hidden" id="ans-modal">
+  <div class="modal-box">
+    <h3>✏️ Set Answer <span style="font-size:14px;color:var(--text2);font-weight:400;">(optional)</span></h3>
+    <img id="modal-preview" src="" alt="preview"/>
+    <input type="text" class="modal-inp" id="modal-inp" placeholder="Leave blank — image speaks for itself!" maxlength="60"/>
+    <p class="modal-skip-note">💡 Answer shown on reveal. Leave blank and the image itself is the answer!</p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="modal-ok" style="flex:1">✅ Save</button>
+      <button class="btn btn-ghost" id="modal-skip">Skip (no label)</button>
     </div>
   </div>
+</div>
 
-  <!-- Teams -->
-  <div class="section" style="position:relative;z-index:1;">
-    <div class="section-title">Teams</div>
-    <div class="pill-row" id="team-count-opts">
-      <div class="pill" data-val="1">1</div>
-      <div class="pill sel" data-val="2">2</div>
-      <div class="pill" data-val="3">3</div>
-      <div class="pill" data-val="4">4</div>
+<!-- Settings -->
+<div class="settings-grid">
+  <div class="section">
+    <div class="section-title">Reveal Mode</div>
+    <div class="pill-row" id="mode-opts">
+      <div class="pill sel" data-val="pixelate">🔍 Pixelate In</div>
+      <div class="pill" data-val="zoom">🔎 Zoom In</div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5;">
+      <strong>Pixelate:</strong> blurry blocks → sharp<br>
+      <strong>Zoom In:</strong> tiny crop → full image
+    </p>
+  </div>
+  <div class="section">
+    <div class="section-title">Reveal Steps</div>
+    <div class="pill-row" id="steps-opts">
+      <div class="pill" data-val="3">3 steps</div>
+      <div class="pill sel" data-val="5">5 steps</div>
+      <div class="pill" data-val="8">8 steps</div>
+      <div class="pill" data-val="12">12 steps</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Max Points (step 1)</div>
+    <div class="pill-row" id="score-opts">
+      <div class="pill" data-val="5">5 pts</div>
+      <div class="pill sel" data-val="10">10 pts</div>
+      <div class="pill" data-val="20">20 pts</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Deduct per step</div>
+    <div class="pill-row" id="deduct-opts">
+      <div class="pill sel" data-val="1">-1 / step</div>
+      <div class="pill" data-val="2">-2 / step</div>
+      <div class="pill" data-val="0">No deduction</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Questions per round</div>
+    <div class="pill-row" id="q-opts">
       <div class="pill" data-val="5">5</div>
-      <div class="pill" data-val="6">6</div>
+      <div class="pill sel" data-val="10">10</div>
+      <div class="pill" data-val="15">15</div>
+      <div class="pill" data-val="999">All</div>
     </div>
-    <div class="team-inputs" id="team-inputs"></div>
   </div>
+</div>
 
-  <div class="cta-row">
-    <button class="btn btn-primary" id="start-btn" disabled>▶ Start Game</button>
+<!-- Players (was Teams) -->
+<div class="section" style="position:relative;z-index:1;">
+  <div class="section-title">Players</div>
+  <div class="pill-row" id="team-count-opts">
+    <div class="pill" data-val="1">1</div>
+    <div class="pill sel" data-val="2">2</div>
+    <div class="pill" data-val="3">3</div>
+    <div class="pill" data-val="4">4</div>
+    <div class="pill" data-val="5">5</div>
+    <div class="pill" data-val="6">6</div>
+    <div class="pill" data-val="7">7</div>
+    <div class="pill" data-val="8">8</div>
+    <div class="pill" data-val="9">9</div>
+    <div class="pill" data-val="10">10</div>
   </div>
+  <div class="team-inputs" id="team-inputs"></div>
+</div>
 
+<div class="cta-row">
+  <a href="../index.html" class="btn btn-ghost" style="text-decoration:none">← Back</a>
+  <button class="btn btn-primary" id="start-btn" disabled>▶ Start Game</button>
+</div>
 </div><!-- /screen-setup -->
 
-<!-- ═══════════════ GAME SCREEN ═══════════════ -->
+<!-- ══════════ GAME ══════════ -->
 <div id="screen-game">
   <div id="hub-timer" class="hub-timer hidden"></div>
-
   <div class="game-top">
     <span class="q-counter" id="q-counter">Q 1 / 10</span>
     <span class="reveal-badge" id="reveal-badge">Step 0 / 5</span>
   </div>
   <div class="score-bar" id="score-bar"></div>
   <div id="q-cat-badge" class="q-cat-badge hidden"></div>
-
   <div class="canvas-wrap">
     <canvas id="pixel-canvas" width="640" height="480"></canvas>
     <div class="pts-badge" id="pts-badge">+10</div>
@@ -357,12 +349,9 @@
       <div class="ans-text" id="ans-text"></div>
     </div>
   </div>
-
   <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
   <div id="hint-box" style="text-align:center;color:var(--text2);font-size:14px;min-height:20px;margin-bottom:10px;"></div>
-
   <div class="team-btns" id="team-btns"></div>
-
   <div class="ctrl-row">
     <button class="btn btn-ghost" id="btn-reveal">👁 Reveal Step</button>
     <button class="btn btn-ghost" id="btn-answer">🔓 Show Answer</button>
@@ -370,7 +359,7 @@
   </div>
 </div>
 
-<!-- ═══════════════ END SCREEN ═══════════════ -->
+<!-- ══════════ END ══════════ -->
 <div id="screen-end">
   <h2>🎉 Game Over!</h2>
   <p class="sub">Final Leaderboard</p>
@@ -382,81 +371,277 @@
 </div>
 
 </div><!-- /wrap -->
-
 <script>
 "use strict";
 
-// ═══════════ CONSTANTS ═══════════
+// ════════════════════════════════
+// CONFIG
+// ════════════════════════════════
 const IMAGE_BASE = "https://yongearn-dev.github.io/game-hub/pixel-guess/images/";
 const SHEET_URL  = "https://opensheet.elk.sh/1nmgda-PSW0qNpEnT65HozbrbK4SPoOlfq3WlEIQSgf4/Sheet2";
-const TEAM_COLORS = ['#f5c542','#3498db','#e94560','#2ecc71','#9b59b6','#e67e22'];
+const TEAM_COLORS = ['#f5c542','#3498db','#e94560','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e74c3c','#8e44ad','#d35400'];
 
-// Built-in image library categories
-// Add your own images here: { answer, imageUrl, category }
-// imageUrl can be a full URL or a relative path like 'images/lion.jpg'
-const BUILTIN_LIBRARY = [
-  // ── Animals ──
-  { answer:'Lion',    category:'Animals',  imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Lion_waiting_in_Namibia.jpg/320px-Lion_waiting_in_Namibia.jpg' },
-  { answer:'Elephant',category:'Animals',  imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/African_Bush_Elephant.jpg/320px-African_Bush_Elephant.jpg' },
-  { answer:'Giraffe', category:'Animals',  imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Giraffe_Mikumi_National_Park.jpg/320px-Giraffe_Mikumi_National_Park.jpg' },
-  { answer:'Penguin', category:'Animals',  imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/South_Shetland-2016-Deception_Island%E2%80%93Chinstrap_penguin_%28Pygoscelis_antarctica%29_04.jpg/320px-South_Shetland-2016-Deception_Island%E2%80%93Chinstrap_penguin_%28Pygoscelis_antarctica%29_04.jpg' },
-  { answer:'Dolphin', category:'Animals',  imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Tursiops_truncatus_01.jpg/320px-Tursiops_truncatus_01.jpg' },
-  // ── Fruits ──
-  { answer:'Strawberry', category:'Fruits', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/PerfectStrawberry.jpg/320px-PerfectStrawberry.jpg' },
-  { answer:'Watermelon', category:'Fruits', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/320px-PNG_transparency_demonstration_1.png' },
-  { answer:'Pineapple',  category:'Fruits', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Pineapple_and_cross_section.jpg/320px-Pineapple_and_cross_section.jpg' },
-  { answer:'Banana',     category:'Fruits', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Banana-Kluay-Hom.jpg/320px-Banana-Kluay-Hom.jpg' },
-  { answer:'Mango',      category:'Fruits', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Hapus_Mango.jpg/320px-Hapus_Mango.jpg' },
-  // ── Landmarks ──
-  { answer:'Eiffel Tower',     category:'Landmarks', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Tour_eiffel_at_sunrise_from_the_trocadero.jpg/320px-Tour_eiffel_at_sunrise_from_the_trocadero.jpg' },
-  { answer:'Great Wall',       category:'Landmarks', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/The_Great_Wall_of_China_at_Jinshanling-edit.jpg/320px-The_Great_Wall_of_China_at_Jinshanling-edit.jpg' },
-  { answer:'Colosseum',        category:'Landmarks', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/320px-Colosseo_2020.jpg' },
-  { answer:'Statue of Liberty',category:'Landmarks', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Statue_of_Liberty_7.jpg/320px-Statue_of_Liberty_7.jpg' },
-  { answer:'Big Ben',          category:'Landmarks', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007_icon.png/160px-Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007_icon.png' },
-  // ── Bible People ──
-  { answer:'Noah',    category:'Bible People', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Gustave_Dore_woodcut_-_Noahs_Ark.jpg/320px-Gustave_Dore_woodcut_-_Noahs_Ark.jpg' },
-  { answer:'Moses',   category:'Bible People', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Sistine_Chapel_-_Michelangelo_-_Moses.jpg/320px-Sistine_Chapel_-_Michelangelo_-_Moses.jpg' },
-  { answer:'David',   category:'Bible People', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/%27David%27_by_Michelangelo_Fir_JBU002_split.jpg/213px-%27David%27_by_Michelangelo_Fir_JBU002_split.jpg' },
-  // ── Bible Stories ──
-  { answer:'Creation',       category:'Bible Stories', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/320px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg' },
-  { answer:"Noah's Ark",     category:'Bible Stories', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Gustave_Dore_woodcut_-_Noahs_Ark.jpg/320px-Gustave_Dore_woodcut_-_Noahs_Ark.jpg' },
-  { answer:'Tower of Babel', category:'Bible Stories', imageUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg/320px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg' },
-];
-
-// Category metadata — keys match sheet's category column exactly
+// Sheet categories only — no built-in demo data
 const CAT_META = {
-  // Sheet categories
-  'animal':        { emoji:'🦁', label:'Animals',       color:'#2ecc71' },
-  'fruit':         { emoji:'🍓', label:'Fruits',        color:'#e74c3c' },
-  'cuisine':       { emoji:'🍜', label:'Cuisine',       color:'#e67e22' },
-  'biblecharacter':{ emoji:'✝️', label:'Bible People',  color:'#f5c542' },
-  'biblestory':    { emoji:'📖', label:'Bible Stories', color:'#9b59b6' },
-  // Built-in / upload fallbacks
-  'Landmarks':     { emoji:'🗼', label:'Landmarks',     color:'#3498db' },
-  'People':        { emoji:'👤', label:'People',        color:'#e67e22' },
-  'Anime':         { emoji:'⛩️', label:'Anime',         color:'#e94560' },
-  'Movies':        { emoji:'🎬', label:'Movies',        color:'#1abc9c' },
-  'Uploaded':      { emoji:'📁', label:'Uploaded',      color:'#b0b0c3' },
-  'Other':         { emoji:'🎲', label:'Other',         color:'#95a5a6' },
+  'animal':              { emoji:'🦁', label:'Animals' },
+  'fruit':               { emoji:'🍓', label:'Fruits' },
+  'cuisine':             { emoji:'🍜', label:'Cuisine' },
+  'biblecharacter':      { emoji:'✝️', label:'Bible People' },
+  'biblestory':          { emoji:'📖', label:'Bible Stories' },
+  'countries & landmarks':{ emoji:'🗼', label:'Countries & Landmarks' },
+  'movie & game':        { emoji:'🎬', label:'Movies & Games' },
+  'nature':              { emoji:'🌿', label:'Nature' },
+  'Uploaded':            { emoji:'📁', label:'Uploaded' },
 };
 
-// ═══════════ STATE ═══════════
 const cfg = {
-  revealSteps: 5, maxScore: 10, deductPerStep: 1,
-  questionsPerRound: 10, teams: 2,
-  teamNames: ['Team 1', 'Team 2']
+  revealMode: 'pixelate',   // 'pixelate' | 'zoom'
+  revealSteps: 5,
+  maxScore: 10,
+  deductPerStep: 1,
+  questionsPerRound: 10,
+  teams: 2,
+  teamNames: Array.from({length:10},(_,i)=>'Player '+(i+1)),
 };
-let uploadedImages = [];   // [{dataUrl, answer}]
-let sheetData = [];        // loaded from Google Sheet
-let selectedCats = new Set();
-let activeTab = 'library';
 
-let queue = [], qIdx = 0, currentStep = 0, totalSteps = 5;
-let revealed = false, scored = false;
-let pendingFile = null, pendingEditIdx = null;
-let scores = [];
+let uploadedImages = [];
+let sheetData      = [];
+let selectedCats   = new Set();
+let activeTab      = 'library';
+let queue          = [], qIdx = 0;
+let currentStep    = 0, totalSteps = 5;
+let revealed       = false;
+let scoredSet      = new Set(); // track which players scored this question
+let pendingFile    = null, pendingEditIdx = null, pendingIsMulti = false;
+let scores         = [];
 
-// ═══════════ TABS ═══════════
+// ════════════════════════════════
+// AUTO-LOAD SHEET ON PAGE OPEN
+// ════════════════════════════════
+window.addEventListener('load', () => {
+  document.getElementById('sheet-url-input').value = SHEET_URL;
+  fetchSheet(SHEET_URL);
+});
+
+function fetchSheet(url) {
+  setLibStatus('loading', 'Loading library…');
+  fetch(url)
+    .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      sheetData = data;
+      const items = data.map(sheetRowToItem).filter(Boolean);
+      buildCatGrid(items);
+      setLibStatus('ok', items.length + ' questions loaded from sheet.');
+    })
+    .catch(() => {
+      buildCatGrid([]);
+      setLibStatus('error', 'Could not load sheet. Check URL or try Reload.');
+    });
+}
+
+function loadSheet() {
+  const url = document.getElementById('sheet-url-input').value.trim() || SHEET_URL;
+  fetchSheet(url);
+}
+
+// ════════════════════════════════
+// SHEET ROW → ITEM
+// Each row has img1/img2/img3 — one picked randomly per question
+// ════════════════════════════════
+function sheetRowToItem(r) {
+  const t = v => (v||'').toString().trim();
+  const variants = [t(r.img1), t(r.img2), t(r.img3)]
+    .filter(f => f.length > 0)
+    .map(f => f.startsWith('http') ? f : IMAGE_BASE + f);
+  if (!variants.length) return null;
+  return {
+    id:       t(r.id),
+    answer:   t(r.answer),
+    category: t(r.category) || 'Other',
+    variants,
+  };
+}
+
+function getAllLibItems() {
+  return sheetData.map(sheetRowToItem).filter(Boolean);
+}
+
+// ════════════════════════════════
+// CATEGORY GRID
+// ════════════════════════════════
+function buildCatGrid(items) {
+  const counts = {};
+  items.forEach(i => { const c=i.category||'Other'; counts[c]=(counts[c]||0)+1; });
+  const wrap = document.getElementById('cat-grid-wrap');
+  wrap.innerHTML = Object.entries(counts).map(([cat,n]) => {
+    const m = CAT_META[cat] || { emoji:'🎲', label:cat };
+    return `<div class="cat-card" data-cat="${cat}" onclick="toggleCat('${cat}')">
+      <div class="cat-emoji">${m.emoji}</div>
+      <div class="cat-name">${m.label}</div>
+      <div class="cat-count">${n} questions</div>
+    </div>`;
+  }).join('');
+  document.getElementById('cat-section').style.display = Object.keys(counts).length ? 'block' : 'none';
+  selectedCats = new Set(Object.keys(counts));
+  refreshCatUI();
+  updateStartBtn();
+}
+
+function toggleCat(cat) {
+  if (selectedCats.has(cat)) selectedCats.delete(cat);
+  else selectedCats.add(cat);
+  refreshCatUI(); updateStartBtn();
+}
+function selectAllCats() {
+  document.querySelectorAll('.cat-card').forEach(c => selectedCats.add(c.dataset.cat));
+  refreshCatUI(); updateStartBtn();
+}
+function clearAllCats() { selectedCats.clear(); refreshCatUI(); updateStartBtn(); }
+function refreshCatUI() {
+  document.querySelectorAll('.cat-card').forEach(c => c.classList.toggle('sel', selectedCats.has(c.dataset.cat)));
+  const n = getAllLibItems().filter(i => selectedCats.has(i.category||'Other')).length;
+  document.getElementById('sel-count').textContent = n + ' questions selected';
+}
+
+function setLibStatus(type, msg) {
+  document.getElementById('lib-status-text').textContent = msg;
+  document.getElementById('lib-dot').className = 'lib-dot ' + type;
+}
+
+// ════════════════════════════════
+// UPLOAD — multi-image, optional answer
+// ════════════════════════════════
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value=''; });
+
+// Handle multiple files — queue them up, show modal one by one
+let multiQueue = [];
+function handleFiles(files) {
+  multiQueue = [...Array.from(files).filter(f=>f.type.startsWith('image/'))];
+  processNextInMultiQueue();
+}
+function processNextInMultiQueue() {
+  if (!multiQueue.length) { renderUploadQueue(); updateStartBtn(); return; }
+  const file = multiQueue.shift();
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingFile = { dataUrl: e.target.result, answer: '' };
+    pendingEditIdx = null;
+    pendingIsMulti = multiQueue.length > 0;
+    openModal(e.target.result, '');
+  };
+  reader.readAsDataURL(file);
+}
+
+function openModal(src, val) {
+  document.getElementById('modal-preview').src = src;
+  document.getElementById('modal-inp').value = val || '';
+  document.getElementById('modal-inp').style.borderColor = '';
+  document.getElementById('ans-modal').classList.remove('hidden');
+  const remaining = multiQueue.length;
+  document.querySelector('#ans-modal h3').innerHTML = remaining > 0
+    ? `✏️ Set Answer <span style="font-size:13px;color:var(--text2);">(${remaining + 1} remaining)</span>`
+    : `✏️ Set Answer <span style="font-size:14px;color:var(--text2);font-weight:400;">(optional)</span>`;
+  setTimeout(() => document.getElementById('modal-inp').focus(), 60);
+}
+
+document.getElementById('modal-ok').addEventListener('click', () => confirmModal(false));
+document.getElementById('modal-skip').addEventListener('click', () => confirmModal(true));
+document.getElementById('modal-inp').addEventListener('keydown', e => { if(e.key==='Enter') confirmModal(false); });
+
+function confirmModal(skipAnswer) {
+  const ans = skipAnswer ? '' : document.getElementById('modal-inp').value.trim();
+  if (pendingEditIdx !== null) {
+    uploadedImages[pendingEditIdx].answer = ans;
+  } else if (pendingFile) {
+    uploadedImages.push({ dataUrl: pendingFile.dataUrl, answer: ans });
+  }
+  document.getElementById('ans-modal').classList.add('hidden');
+  pendingFile = null; pendingEditIdx = null;
+  // Continue with remaining files in queue
+  if (multiQueue.length > 0) {
+    processNextInMultiQueue();
+  } else {
+    renderUploadQueue();
+    updateStartBtn();
+  }
+}
+
+function renderUploadQueue() {
+  const n = uploadedImages.length;
+  document.getElementById('img-count').textContent = n ? '(' + n + ')' : '';
+  document.getElementById('img-queue').innerHTML = uploadedImages.map((img,i) => `
+    <div class="img-thumb" data-idx="${i}">
+      <img src="${img.dataUrl}" alt="img"/>
+      ${img.answer
+        ? `<div class="img-ans">${img.answer}</div>`
+        : `<div class="img-no-ans">no label</div>`}
+      <div class="img-rm" data-rm="${i}">✕</div>
+    </div>`).join('');
+  document.getElementById('img-queue').querySelectorAll('.img-thumb').forEach(el => {
+    el.addEventListener('click', function(e) {
+      const rm = e.target.closest('[data-rm]');
+      if (rm) { uploadedImages.splice(+rm.dataset.rm, 1); renderUploadQueue(); updateStartBtn(); return; }
+      const idx = +this.dataset.idx;
+      pendingEditIdx = idx; pendingFile = null;
+      openModal(uploadedImages[idx].dataUrl, uploadedImages[idx].answer);
+    });
+  });
+}
+
+// ════════════════════════════════
+// PILLS
+// ════════════════════════════════
+function initPills(id, key) {
+  document.getElementById(id).querySelectorAll('.pill').forEach(p => {
+    p.addEventListener('click', function() {
+      document.getElementById(id).querySelectorAll('.pill').forEach(x=>x.classList.remove('sel'));
+      this.classList.add('sel');
+      cfg[key] = isNaN(+this.dataset.val) ? this.dataset.val : +this.dataset.val;
+    });
+  });
+}
+initPills('mode-opts',      'revealMode');
+initPills('steps-opts',     'revealSteps');
+initPills('score-opts',     'maxScore');
+initPills('deduct-opts',    'deductPerStep');
+initPills('q-opts',         'questionsPerRound');
+
+document.getElementById('team-count-opts').querySelectorAll('.pill').forEach(p => {
+  p.addEventListener('click', function() {
+    document.getElementById('team-count-opts').querySelectorAll('.pill').forEach(x=>x.classList.remove('sel'));
+    this.classList.add('sel');
+    renderTeamInputs(+this.dataset.val);
+  });
+});
+
+function renderTeamInputs(n) {
+  cfg.teams = n;
+  document.getElementById('team-inputs').innerHTML = Array.from({length:n},(_,i)=>`
+    <div class="team-row" style="margin-top:8px;">
+      <div class="team-dot" style="background:${TEAM_COLORS[i]}"></div>
+      <input class="team-inp" type="text" placeholder="Player ${i+1}" value="${cfg.teamNames[i]||'Player '+(i+1)}" data-ti="${i}"/>
+    </div>`).join('');
+  document.getElementById('team-inputs').querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', function(){ cfg.teamNames[+this.dataset.ti]=this.value||'Player '+(+this.dataset.ti+1); });
+  });
+}
+renderTeamInputs(2);
+
+// ════════════════════════════════
+// START BUTTON
+// ════════════════════════════════
+function updateStartBtn() {
+  const libOk = activeTab==='library' && selectedCats.size>0 && getAllLibItems().filter(i=>selectedCats.has(i.category||'Other')).length>0;
+  const upOk  = activeTab==='upload'  && uploadedImages.length>0;
+  document.getElementById('start-btn').disabled = !(libOk||upOk);
+}
+
 function switchTab(tab) {
   activeTab = tab;
   document.getElementById('tab-library').classList.toggle('active', tab==='library');
@@ -466,264 +651,10 @@ function switchTab(tab) {
   updateStartBtn();
 }
 
-// ═══════════ LIBRARY / SHEET ═══════════
-function loadSheet() {
-  const url = document.getElementById('sheet-url-input').value.trim() || SHEET_URL;
-  setLibStatus('loading', 'Loading…');
-  fetch(url)
-    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-    .then(data => {
-      sheetData = data;
-      const sheetItems = data.map(sheetRowToItem).filter(Boolean);
-      const builtin = BUILTIN_LIBRARY.map(item => ({
-        id: item.answer, answer: item.answer,
-        category: item.category, variants: [item.imageUrl],
-      }));
-      buildCatGrid([...builtin, ...sheetItems]);
-      setLibStatus('ok', 'Loaded ' + sheetItems.length + ' questions from sheet.');
-    })
-    .catch(() => {
-      setLibStatus('error', 'Failed to load. Check URL.');
-    });
-}
-
-// Auto-load: fetch sheet first, fall back to built-in
-window.addEventListener('load', () => {
-  // Pre-fill the sheet URL
-  document.getElementById('sheet-url-input').value = SHEET_URL;
-  setLibStatus('loading', 'Loading question library…');
-  fetch(SHEET_URL)
-    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-    .then(data => {
-      sheetData = data;
-      const sheetItems = data.map(sheetRowToItem).filter(Boolean);
-      const builtin = BUILTIN_LIBRARY.map(item => ({
-        id: item.answer, answer: item.answer,
-        category: item.category, variants: [item.imageUrl],
-      }));
-      const combined = [...builtin, ...sheetItems];
-      buildCatGrid(combined);
-      setLibStatus('ok', 'Loaded ' + sheetItems.length + ' questions from sheet + ' + builtin.length + ' built-in.');
-    })
-    .catch(() => {
-      const builtin = BUILTIN_LIBRARY.map(item => ({
-        id: item.answer, answer: item.answer,
-        category: item.category, variants: [item.imageUrl],
-      }));
-      buildCatGrid(builtin);
-      setLibStatus('ok', 'Using built-in library (' + BUILTIN_LIBRARY.length + ' items). Sheet unavailable.');
-    });
-});
-
-function setLibStatus(type, msg) {
-  const dot = document.getElementById('lib-dot');
-  document.getElementById('lib-status-text').textContent = msg;
-  dot.className = 'lib-dot ' + type;
-}
-
-// Convert a raw sheet row into our internal format
-// Stores all image variants; buildQueue picks one randomly per answer
-function sheetRowToItem(r) {
-  const trim = v => (v||'').toString().trim();
-  const variants = [trim(r.img1), trim(r.img2), trim(r.img3)]
-    .filter(f => f.length > 0)
-    .map(f => f.startsWith('http') ? f : IMAGE_BASE + f);
-  if (!variants.length) return null;
-  return {
-    id:       trim(r.id),
-    answer:   trim(r.answer),
-    category: trim(r.category) || 'Other',
-    variants, // array of image URLs; one picked at queue-build
-  };
-}
-
-function getAllLibItems() {
-  const fromSheet = sheetData.map(sheetRowToItem).filter(Boolean);
-  // Built-in items already have a single imageUrl; wrap as single-variant
-  const builtin = BUILTIN_LIBRARY.map(item => ({
-    id: item.answer,
-    answer: item.answer,
-    category: item.category,
-    variants: [item.imageUrl],
-  }));
-  return [...builtin, ...fromSheet];
-}
-
-function buildCatGrid(items) {
-  const cats = {};
-  items.forEach(item => {
-    const c = item.category || 'Other';
-    cats[c] = (cats[c] || 0) + 1;
-  });
-  const wrap = document.getElementById('cat-grid-wrap');
-  wrap.innerHTML = Object.entries(cats).map(([cat, count]) => {
-    const meta = CAT_META[cat] || { emoji:'🎲', label:cat, color:'#95a5a6' };
-    return `<div class="cat-card" data-cat="${cat}" onclick="toggleCat('${cat}')">
-      <div class="cat-emoji">${meta.emoji}</div>
-      <div class="cat-name">${meta.label||cat}</div>
-      <div class="cat-count">${count} questions</div>
-    </div>`;
-  }).join('');
-  document.getElementById('cat-section').style.display = 'block';
-  selectedCats = new Set(Object.keys(cats));
-  refreshCatUI();
-  updateStartBtn();
-}
-
-function toggleCat(cat) {
-  if (selectedCats.has(cat)) selectedCats.delete(cat);
-  else selectedCats.add(cat);
-  refreshCatUI();
-  updateStartBtn();
-}
-function selectAllCats() {
-  document.querySelectorAll('.cat-card').forEach(c => selectedCats.add(c.dataset.cat));
-  refreshCatUI(); updateStartBtn();
-}
-function clearAllCats() { selectedCats.clear(); refreshCatUI(); updateStartBtn(); }
-function refreshCatUI() {
-  document.querySelectorAll('.cat-card').forEach(c => c.classList.toggle('sel', selectedCats.has(c.dataset.cat)));
-  const total = getAllLibItems().filter(i => selectedCats.has(i.category||'Other')).length;
-  document.getElementById('sel-count').textContent = total + ' questions selected';
-}
-
-// ═══════════ UPLOAD ═══════════
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('file-input');
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
-fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value=''; });
-
-function handleFiles(files) {
-  Array.from(files).forEach(file => {
-    if (!file.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      pendingFile = { dataUrl: e.target.result, answer: '' };
-      pendingEditIdx = null;
-      openModal(e.target.result, '');
-    };
-    reader.readAsDataURL(file);
-  });
-}
-function openModal(src, val) {
-  document.getElementById('modal-preview').src = src;
-  document.getElementById('modal-inp').value = val;
-  document.getElementById('modal-inp').style.borderColor = '';
-  document.getElementById('ans-modal').classList.remove('hidden');
-  setTimeout(() => document.getElementById('modal-inp').focus(), 60);
-}
-document.getElementById('modal-ok').addEventListener('click', confirmModal);
-document.getElementById('modal-inp').addEventListener('keydown', e => { if(e.key==='Enter') confirmModal(); });
-document.getElementById('modal-cancel').addEventListener('click', () => {
-  document.getElementById('ans-modal').classList.add('hidden');
-  pendingFile = null; pendingEditIdx = null;
-});
-function confirmModal() {
-  const ans = document.getElementById('modal-inp').value.trim();
-  if (!ans) { document.getElementById('modal-inp').style.borderColor='var(--accent)'; return; }
-  if (pendingEditIdx !== null) uploadedImages[pendingEditIdx].answer = ans;
-  else if (pendingFile) uploadedImages.push({...pendingFile, answer: ans});
-  document.getElementById('ans-modal').classList.add('hidden');
-  pendingFile = null; pendingEditIdx = null;
-  renderUploadQueue();
-  updateStartBtn();
-}
-function renderUploadQueue() {
-  const count = uploadedImages.length;
-  document.getElementById('img-count').textContent = count ? '(' + count + ')' : '';
-  document.getElementById('img-queue').innerHTML = uploadedImages.map((img,i) => `
-    <div class="img-thumb" data-idx="${i}">
-      <img src="${img.dataUrl}" alt="img"/>
-      <div class="img-ans">${img.answer}</div>
-      <div class="img-rm" data-rm="${i}">✕</div>
-    </div>`).join('');
-  document.getElementById('img-queue').querySelectorAll('.img-thumb').forEach(el => {
-    el.addEventListener('click', function(e) {
-      const rm = e.target.closest('[data-rm]');
-      if (rm) { uploadedImages.splice(+rm.dataset.rm,1); renderUploadQueue(); updateStartBtn(); return; }
-      const idx = +this.dataset.idx;
-      pendingEditIdx = idx; pendingFile = null;
-      openModal(uploadedImages[idx].dataUrl, uploadedImages[idx].answer);
-    });
-  });
-}
-
-// ═══════════ PILLS ═══════════
-function initPills(groupId, key) {
-  document.getElementById(groupId).querySelectorAll('.pill').forEach(p => {
-    p.addEventListener('click', function() {
-      document.getElementById(groupId).querySelectorAll('.pill').forEach(x=>x.classList.remove('sel'));
-      this.classList.add('sel');
-      cfg[key] = +this.dataset.val;
-    });
-  });
-}
-initPills('steps-opts','revealSteps');
-initPills('score-opts','maxScore');
-initPills('deduct-opts','deductPerStep');
-initPills('q-opts','questionsPerRound');
-initPills('team-count-opts','teams');
-document.getElementById('team-count-opts').addEventListener('click', e => {
-  if (e.target.classList.contains('pill')) renderTeamInputs(+e.target.dataset.val);
-});
-function renderTeamInputs(n) {
-  cfg.teams = n;
-  document.getElementById('team-inputs').innerHTML = Array.from({length:n},(_,i)=>`
-    <div class="team-row" style="margin-top:8px;">
-      <div class="team-dot" style="background:${TEAM_COLORS[i]}"></div>
-      <input class="team-inp" type="text" placeholder="Team ${i+1}" value="${cfg.teamNames[i]||'Team '+(i+1)}" data-ti="${i}"/>
-    </div>`).join('');
-  document.getElementById('team-inputs').querySelectorAll('input').forEach(inp=>{
-    inp.addEventListener('input', function(){ cfg.teamNames[+this.dataset.ti]=this.value||'Team '+(+this.dataset.ti+1); });
-  });
-}
-renderTeamInputs(2);
-
-// ═══════════ START BUTTON ═══════════
-function updateStartBtn() {
-  const libOk = activeTab==='library' && selectedCats.size > 0;
-  const upOk  = activeTab==='upload'  && uploadedImages.length > 0;
-  document.getElementById('start-btn').disabled = !(libOk || upOk);
-}
-
-// ═══════════ BUILD QUEUE ═══════════
-// Each item gets ONE randomly chosen image variant.
-// No answer repeats within a round even if the sheet has multiple images for it.
-function buildQueue() {
-  let items = [];
-  if (activeTab === 'library') {
-    items = getAllLibItems().filter(i => selectedCats.has(i.category||'Other'));
-  } else {
-    // Uploaded images — already have a single dataUrl
-    items = uploadedImages.map(i => ({
-      id: i.answer, answer: i.answer,
-      category: 'Uploaded',
-      variants: [i.dataUrl],
-    }));
-  }
-
-  // Shuffle items (each item = one unique answer)
-  for(let i=items.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];
-  }
-  // Trim to round size
-  if (cfg.questionsPerRound !== 999) items = items.slice(0, cfg.questionsPerRound);
-
-  // For each item, pick ONE random variant image
-  return items.map(item => ({
-    answer:   item.answer,
-    category: item.category,
-    imageUrl: item.variants[Math.floor(Math.random() * item.variants.length)],
-  }));
-}
-
-// ═══════════ START GAME ═══════════
 document.getElementById('start-btn').addEventListener('click', function() {
-  const inputs = document.getElementById('team-inputs').querySelectorAll('input');
-  cfg.teamNames = Array.from(inputs).map((inp,i)=>inp.value.trim()||'Team '+(i+1));
+  document.getElementById('team-inputs').querySelectorAll('input').forEach((inp,i)=>{
+    cfg.teamNames[i] = inp.value.trim()||'Player '+(i+1);
+  });
   scores = new Array(cfg.teams).fill(0);
   queue = buildQueue();
   qIdx = 0;
@@ -731,16 +662,43 @@ document.getElementById('start-btn').addEventListener('click', function() {
   loadQ();
 });
 
-// ═══════════ GAME LOGIC ═══════════
+// ════════════════════════════════
+// BUILD QUEUE — random variant per answer, no repeats
+// ════════════════════════════════
+function buildQueue() {
+  let items = [];
+  if (activeTab === 'library') {
+    items = getAllLibItems().filter(i => selectedCats.has(i.category||'Other'));
+  } else {
+    items = uploadedImages.map(img => ({
+      id: img.dataUrl.slice(-20),
+      answer: img.answer,
+      category: 'Uploaded',
+      variants: [img.dataUrl],
+    }));
+  }
+  shuffle(items);
+  if (cfg.questionsPerRound !== 999) items = items.slice(0, cfg.questionsPerRound);
+  // Pick one random variant per item
+  return items.map(item => ({
+    answer:   item.answer,
+    category: item.category,
+    imageUrl: item.variants[Math.floor(Math.random() * item.variants.length)],
+  }));
+}
+
+// ════════════════════════════════
+// GAME LOGIC
+// ════════════════════════════════
 const canvas = document.getElementById('pixel-canvas');
-const ctx = canvas.getContext('2d');
+const ctx    = canvas.getContext('2d');
 
 function loadQ() {
   if (qIdx >= queue.length) { endGame(); return; }
   currentStep = 0;
-  revealed = false;
-  scored = false;
-  totalSteps = cfg.revealSteps;
+  revealed    = false;
+  scoredSet   = new Set();
+  totalSteps  = cfg.revealSteps;
 
   const q = queue[qIdx];
   document.getElementById('q-counter').textContent = 'Q ' + (qIdx+1) + ' / ' + queue.length;
@@ -749,25 +707,21 @@ function loadQ() {
   document.getElementById('ans-overlay').classList.remove('show');
   document.getElementById('btn-next').disabled = true;
   document.getElementById('progress-bar').style.width = '0%';
+  updatePtsBadge();
 
   // Category badge
   const catBadge = document.getElementById('q-cat-badge');
-  if (q.category) {
-    const meta = CAT_META[q.category] || { emoji:'🎲', label:q.category };
-    catBadge.textContent = meta.emoji + ' ' + (meta.label || q.category);
+  if (q.category && q.category !== 'Uploaded') {
+    const m = CAT_META[q.category] || { emoji:'🎲', label:q.category };
+    catBadge.textContent = m.emoji + ' ' + m.label;
     catBadge.classList.remove('hidden');
   } else { catBadge.classList.add('hidden'); }
 
-  updatePtsBadge();
   renderScoreBar();
   renderTeamBtns();
-  drawPixelated(q.imageUrl, getPixelSize(0));
+  drawRevealStep(q.imageUrl, 0);
 }
 
-function getPixelSize(step) {
-  const ratio = 1 - (step / totalSteps);
-  return Math.max(1, Math.round(64 * Math.pow(ratio, 1.5)));
-}
 function getCurrentPts() {
   return Math.max(0, cfg.maxScore - currentStep * cfg.deductPerStep);
 }
@@ -777,42 +731,53 @@ function updatePtsBadge() {
   document.getElementById('pts-badge').style.background = pts > 0 ? 'var(--accent)' : 'rgba(255,255,255,.15)';
 }
 
-// Draw image cover-style: fills canvas, maintains aspect ratio, crops if needed
-function drawCover(ctx, img, W, H) {
-  const imgRatio = img.naturalWidth / img.naturalHeight;
-  const canvasRatio = W / H;
-  let sx=0, sy=0, sw=img.naturalWidth, sh=img.naturalHeight;
-  if (imgRatio > canvasRatio) {
-    // Image wider than canvas → crop sides
-    sw = Math.round(img.naturalHeight * canvasRatio);
-    sx = Math.round((img.naturalWidth - sw) / 2);
-  } else {
-    // Image taller than canvas → crop top/bottom
-    sh = Math.round(img.naturalWidth / canvasRatio);
-    sy = Math.round((img.naturalHeight - sh) / 2);
-  }
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+// ════════════════════════════════
+// REVEAL — two modes
+// ════════════════════════════════
+function getPixelSize(step) {
+  const ratio = 1 - (step / totalSteps);
+  return Math.max(1, Math.round(64 * Math.pow(ratio, 1.6)));
 }
 
-function drawPixelated(src, blockSize) {
+// Zoom mode: show a small crop centred, expanding to full image
+function getZoomCrop(step, imgW, imgH, canW, canH) {
+  // step 0 = tiny centre crop; totalSteps = full image
+  const fraction = 0.15 + 0.85 * (step / totalSteps); // 15%..100% of image
+  const imgRatio = imgW / imgH;
+  const canRatio = canW / canH;
+  let sw, sh;
+  if (imgRatio > canRatio) { sh = imgH * fraction; sw = sh * canRatio; }
+  else { sw = imgW * fraction; sh = sw / canRatio; }
+  const sx = (imgW - sw) / 2;
+  const sy = (imgH - sh) / 2;
+  return { sx, sy, sw, sh };
+}
+
+function drawRevealStep(src, step) {
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = function() {
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
-    if (blockSize <= 1) {
-      drawCover(ctx, img, W, H);
+    if (cfg.revealMode === 'zoom') {
+      const { sx, sy, sw, sh } = getZoomCrop(step, img.naturalWidth, img.naturalHeight, W, H);
+      ctx.imageSmoothingEnabled = step === totalSteps;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
     } else {
-      // Draw cover-cropped at tiny size, then scale up for pixel effect
-      const offW = Math.ceil(W / blockSize);
-      const offH = Math.ceil(H / blockSize);
-      const off = document.createElement('canvas');
-      off.width = offW; off.height = offH;
-      const octx = off.getContext('2d');
-      octx.imageSmoothingEnabled = true;
-      drawCover(octx, img, offW, offH);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(off, 0, 0, W, H);
+      // Pixelate
+      if (step >= totalSteps || step === -1) {
+        drawCover(ctx, img, W, H);
+      } else {
+        const blockSize = getPixelSize(step);
+        const offW = Math.ceil(W / blockSize), offH = Math.ceil(H / blockSize);
+        const off = document.createElement('canvas');
+        off.width = offW; off.height = offH;
+        const octx = off.getContext('2d');
+        octx.imageSmoothingEnabled = true;
+        drawCover(octx, img, offW, offH);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(off, 0, 0, W, H);
+      }
     }
   };
   img.onerror = function() {
@@ -820,25 +785,32 @@ function drawPixelated(src, blockSize) {
     ctx.fillStyle = 'rgba(255,255,255,.05)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'rgba(255,255,255,.4)';
-    ctx.font = 'bold 22px Rubik,sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('⚠️ Could not load image', canvas.width/2, canvas.height/2);
-    ctx.font = '14px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,.2)';
-    ctx.fillText(src.split('/').pop(), canvas.width/2, canvas.height/2 + 34);
+    ctx.font = 'bold 20px Rubik,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⚠️ Image not found', canvas.width/2, canvas.height/2);
+    ctx.font = '13px monospace'; ctx.fillStyle = 'rgba(255,255,255,.25)';
+    ctx.fillText(src.split('/').pop(), canvas.width/2, canvas.height/2 + 30);
   };
   img.src = src;
+}
+
+// Cover crop helper
+function drawCover(c, img, W, H) {
+  const ir = img.naturalWidth / img.naturalHeight, cr = W / H;
+  let sx=0, sy=0, sw=img.naturalWidth, sh=img.naturalHeight;
+  if (ir > cr) { sw = Math.round(img.naturalHeight * cr); sx = Math.round((img.naturalWidth-sw)/2); }
+  else          { sh = Math.round(img.naturalWidth / cr); sy = Math.round((img.naturalHeight-sh)/2); }
+  c.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
 }
 
 document.getElementById('btn-reveal').addEventListener('click', function() {
   if (revealed) return;
   if (currentStep >= totalSteps) { revealAnswer(); return; }
   currentStep++;
-  drawPixelated(queue[qIdx].imageUrl, getPixelSize(currentStep));
+  drawRevealStep(queue[qIdx].imageUrl, currentStep);
   updatePtsBadge();
   document.getElementById('reveal-badge').textContent = 'Step ' + currentStep + ' / ' + totalSteps;
-  document.getElementById('progress-bar').style.width = (currentStep/totalSteps*100)+'%';
+  document.getElementById('progress-bar').style.width = (currentStep/totalSteps*100) + '%';
   renderTeamBtns();
   playBeep();
   if (currentStep >= totalSteps) setTimeout(revealAnswer, 400);
@@ -850,29 +822,38 @@ document.getElementById('btn-next').addEventListener('click', function() { qIdx+
 function revealAnswer() {
   if (revealed) return;
   revealed = true;
-  document.getElementById('ans-text').textContent = queue[qIdx].answer;
-  document.getElementById('ans-overlay').classList.add('show');
-  drawPixelated(queue[qIdx].imageUrl, 1);
+  const q = queue[qIdx];
+  // Show answer in bottom-right of image (no dark overlay)
+  document.getElementById('ans-text').textContent = q.answer || '';
+  if (q.answer) document.getElementById('ans-overlay').classList.add('show');
+  // Redraw fully sharp
+  drawRevealStep(q.imageUrl, -1);
   document.getElementById('btn-next').disabled = false;
   document.getElementById('progress-bar').style.width = '100%';
   document.getElementById('reveal-badge').textContent = '✅ Revealed';
   renderTeamBtns();
 }
 
+// ════════════════════════════════
+// SCORING — multiple players can score same question
+// ════════════════════════════════
 function renderTeamBtns() {
   const pts = getCurrentPts();
-  document.getElementById('team-btns').innerHTML = cfg.teamNames.map((name,i)=>`
-    <button class="tsb" style="background:${TEAM_COLORS[i]};color:${i===0?'#1a1a00':'#fff'};"
-      ${scored?'disabled':''} data-team="${i}">
+  document.getElementById('team-btns').innerHTML = cfg.teamNames.slice(0, cfg.teams).map((name,i)=>`
+    <button class="tsb ${scoredSet.has(i)?'disabled':''}"
+      style="background:${TEAM_COLORS[i]};color:${i===0?'#1a1a00':'#fff'};"
+      ${scoredSet.has(i)?'disabled':''} data-team="${i}">
       ${name}
-      <span style="background:rgba(0,0,0,.2);padding:3px 9px;border-radius:6px;margin-left:6px;font-size:13px">+${pts}</span>
+      <span style="background:rgba(0,0,0,.2);padding:3px 9px;border-radius:6px;margin-left:6px;font-size:13px">
+        ${scoredSet.has(i)?'✓':'+'+pts}
+      </span>
     </button>`).join('');
   document.getElementById('team-btns').querySelectorAll('.tsb').forEach(btn=>{
     btn.addEventListener('click', function() {
-      if (scored) return;
       const ti = +this.dataset.team;
+      if (scoredSet.has(ti)) return;
       scores[ti] = (scores[ti]||0) + getCurrentPts();
-      scored = true;
+      scoredSet.add(ti);
       if (!revealed) revealAnswer();
       renderScoreBar(ti);
       renderTeamBtns();
@@ -882,7 +863,7 @@ function renderTeamBtns() {
 }
 
 function renderScoreBar(justScored) {
-  document.getElementById('score-bar').innerHTML = cfg.teamNames.map((name,i)=>`
+  document.getElementById('score-bar').innerHTML = cfg.teamNames.slice(0,cfg.teams).map((name,i)=>`
     <div class="chip ${justScored===i?'scored':''}">
       <span class="dot" style="background:${TEAM_COLORS[i]}"></span>
       <span>${name}</span>
@@ -890,49 +871,43 @@ function renderScoreBar(justScored) {
     </div>`).join('');
 }
 
-// ═══════════ END ═══════════
+// ════════════════════════════════
+// END
+// ════════════════════════════════
 function endGame() {
   showScreen('end');
   playFanfare(); launchConfetti();
-  const sorted = cfg.teamNames.map((n,i)=>({n,s:scores[i]||0})).sort((a,b)=>b.s-a.s);
+  const sorted = cfg.teamNames.slice(0,cfg.teams).map((n,i)=>({n,s:scores[i]||0,i})).sort((a,b)=>b.s-a.s);
   const medals = ['🥇','🥈','🥉'];
-  document.getElementById('final-lb').innerHTML = sorted.map((t,i)=>`
-    <li style="animation-delay:${i*.08}s">
-      <span style="font-size:22px">${medals[i]||'🎮'}</span>
-      <span class="dot" style="background:${TEAM_COLORS[cfg.teamNames.indexOf(t.n)]}"></span>
+  document.getElementById('final-lb').innerHTML = sorted.map((t,rank)=>`
+    <li style="animation-delay:${rank*.08}s">
+      <span style="font-size:22px">${medals[rank]||'🎮'}</span>
+      <span class="dot" style="background:${TEAM_COLORS[t.i]}"></span>
       <span>${t.n}</span>
       <span class="lb-score">${t.s}</span>
     </li>`).join('');
 }
 document.getElementById('btn-again').addEventListener('click', ()=>{
-  document.getElementById('start-btn').disabled = true;
-  updateStartBtn();
-  showScreen('setup');
+  updateStartBtn(); showScreen('setup');
 });
 
-// ═══════════ SOUND ═══════════
-function playBeep() {
-  try{const a=new(window.AudioContext||window.webkitAudioContext)();const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.setValueAtTime(600,a.currentTime);o.frequency.linearRampToValueAtTime(900,a.currentTime+.15);g.gain.setValueAtTime(.12,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.25);o.start();o.stop(a.currentTime+.25);}catch(e){}
-}
-function playCorrect() {
-  try{const a=new(window.AudioContext||window.webkitAudioContext)();[[523,0],[784,.12]].forEach(([f,d])=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.setValueAtTime(.18,a.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d+.3);o.start(a.currentTime+d);o.stop(a.currentTime+d+.3);});}catch(e){}
-}
-function playFanfare() {
-  try{const a=new(window.AudioContext||window.webkitAudioContext)();[[523,0],[659,.12],[784,.24],[1047,.36]].forEach(([f,d])=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.setValueAtTime(.18,a.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d+.35);o.start(a.currentTime+d);o.stop(a.currentTime+d+.35);});}catch(e){}
-}
+// ════════════════════════════════
+// SOUND
+// ════════════════════════════════
+function playBeep(){try{const a=new(window.AudioContext||window.webkitAudioContext)();const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.setValueAtTime(600,a.currentTime);o.frequency.linearRampToValueAtTime(900,a.currentTime+.15);g.gain.setValueAtTime(.12,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.25);o.start();o.stop(a.currentTime+.25);}catch(e){}}
+function playCorrect(){try{const a=new(window.AudioContext||window.webkitAudioContext)();[[523,0],[784,.12]].forEach(([f,d])=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.setValueAtTime(.18,a.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d+.3);o.start(a.currentTime+d);o.stop(a.currentTime+d+.3);});}catch(e){}}
+function playFanfare(){try{const a=new(window.AudioContext||window.webkitAudioContext)();[[523,0],[659,.12],[784,.24],[1047,.36]].forEach(([f,d])=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.setValueAtTime(.18,a.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d+.35);o.start(a.currentTime+d);o.stop(a.currentTime+d+.35);});}catch(e){}}
 
-// ═══════════ CONFETTI ═══════════
-function launchConfetti() {
-  const colors=['#f5c542','#e94560','#3498db','#2ecc71','#9b59b6','#e67e22'];
-  for(let i=0;i<70;i++){const el=document.createElement('div');el.style.cssText=`position:fixed;top:-10px;left:${Math.random()*100}vw;width:${7+Math.random()*7}px;height:${7+Math.random()*7}px;background:${colors[~~(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:confetti-fall ${1.5+Math.random()*2}s ${Math.random()*.5}s forwards;z-index:9999;pointer-events:none;`;document.body.appendChild(el);setTimeout(()=>el.remove(),4000);}
-}
+// ════════════════════════════════
+// CONFETTI
+// ════════════════════════════════
+function launchConfetti(){const c=['#f5c542','#e94560','#3498db','#2ecc71','#9b59b6','#e67e22'];for(let i=0;i<70;i++){const el=document.createElement('div');el.style.cssText=`position:fixed;top:-10px;left:${Math.random()*100}vw;width:${7+Math.random()*7}px;height:${7+Math.random()*7}px;background:${c[~~(Math.random()*c.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:confetti-fall ${1.5+Math.random()*2}s ${Math.random()*.5}s forwards;z-index:9999;pointer-events:none;`;document.body.appendChild(el);setTimeout(()=>el.remove(),4000);}}
 
-// ═══════════ UTILS ═══════════
-function showScreen(name) {
-  ['screen-setup','screen-game','screen-end'].forEach(id=>{
-    document.getElementById(id).style.display = id==='screen-'+name ? 'block' : 'none';
-  });
-}
+// ════════════════════════════════
+// UTILS
+// ════════════════════════════════
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function showScreen(n){['screen-setup','screen-game','screen-end'].forEach(id=>{document.getElementById(id).style.display=id==='screen-'+n?'block':'none';});}
 </script>
 </body>
 </html>
