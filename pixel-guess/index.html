@@ -127,29 +127,32 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 #pixel-canvas{width:100%;max-width:640px;border-radius:16px;border:2px solid rgba(255,255,255,.07);display:block;image-rendering:pixelated;background:var(--panel);}
 .pts-badge{position:absolute;top:12px;right:12px;background:var(--accent);color:#fff;font-family:'Rubik',sans-serif;font-weight:900;font-size:19px;padding:5px 13px;border-radius:50px;z-index:5;transition:all .3s;box-shadow:0 3px 10px rgba(233,69,96,.4);}
 
-/* Answer overlay — bottom-right, small white text, no dark overlay */
+/* Answer overlay — bottom-right corner, single line, white with tight shadow */
 .ans-overlay{
   position:absolute;
-  bottom:14px;right:14px;
-  opacity:0;pointer-events:none;
+  bottom:10px; right:12px;
+  opacity:0; pointer-events:none;
   transition:opacity .3s;
   z-index:6;
-  max-width:60%;
+  max-width:75%;          /* wider so long answers stay on 1 line */
   text-align:right;
 }
-.ans-overlay.show{opacity:1;pointer-events:auto;}
+.ans-overlay.show{opacity:.78;} /* 75% opacity as requested */
 .ans-text{
   font-family:'Rubik',sans-serif;
-  font-size:clamp(14px,2.5vw,22px);
+  font-size:clamp(13px,2vw,18px); /* half the previous size */
   font-weight:900;
   color:#fff;
-  line-height:1.2;
+  white-space:nowrap;       /* never wrap */
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.1;
   text-shadow:
-    1px 1px 0 rgba(0,0,0,.9),
-    -1px 1px 0 rgba(0,0,0,.9),
-    1px -1px 0 rgba(0,0,0,.9),
-    -1px -1px 0 rgba(0,0,0,.9),
-    0 2px 8px rgba(0,0,0,.8);
+    1px 1px 2px rgba(0,0,0,.95),  /* tight, less blur */
+    -1px -1px 2px rgba(0,0,0,.95),
+    1px -1px 2px rgba(0,0,0,.95),
+    -1px 1px 2px rgba(0,0,0,.95),
+    2px 3px 4px rgba(0,0,0,.7);   /* small drop-shadow shifted right-down */
 }
 
 /* Progress */
@@ -161,10 +164,11 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* Player scoring buttons */
 .team-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0;}
-.tsb{padding:13px 22px;border-radius:50px;border:none;font-family:'Rubik',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s;box-shadow:0 4px 0 rgba(0,0,0,.3);}
+.tsb{padding:13px 22px;border-radius:50px;border:none;font-family:'Rubik',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .15s,box-shadow .15s;box-shadow:0 4px 0 rgba(0,0,0,.3);}
 .tsb:hover{transform:translateY(-2px);}
 .tsb:active{transform:translateY(1px);}
-.tsb:disabled{opacity:.35;cursor:not-allowed;transform:none;text-decoration:line-through;}
+/* scored = toggled ON — bright border to show it's active, click again to cancel */
+.tsb.is-scored{box-shadow:0 0 0 3px #fff,0 4px 0 rgba(0,0,0,.3);}
 
 .ctrl-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
@@ -411,7 +415,8 @@ let activeTab      = 'library';
 let queue          = [], qIdx = 0;
 let currentStep    = 0, totalSteps = 5;
 let revealed       = false;
-let scoredSet      = new Set(); // track which players scored this question
+// scoredSteps: Map<playerIndex, pointsAwarded> — stores pts per player for toggle-cancel
+let scoredSteps    = new Map();
 let pendingFile    = null, pendingEditIdx = null, pendingIsMulti = false;
 let scores         = [];
 
@@ -697,7 +702,7 @@ function loadQ() {
   if (qIdx >= queue.length) { endGame(); return; }
   currentStep = 0;
   revealed    = false;
-  scoredSet   = new Set();
+  scoredSteps = new Map();
   totalSteps  = cfg.revealSteps;
 
   const q = queue[qIdx];
@@ -739,10 +744,23 @@ function getPixelSize(step) {
   return Math.max(1, Math.round(64 * Math.pow(ratio, 1.6)));
 }
 
-// Zoom mode: show a small crop centred, expanding to full image
+// Zoom mode: starts VERY ZOOMED IN (big/cropped, blocks visible) → shrinks toward full image each step
+// step 0 = maximum zoom (small centre crop fills canvas, blocky)
+// step totalSteps = ~1.5x still bigger than image (not fully out)
+// step -1 (show answer) = normal full cover size
 function getZoomCrop(step, imgW, imgH, canW, canH) {
-  // step 0 = tiny centre crop; totalSteps = full image
-  const fraction = 0.15 + 0.85 * (step / totalSteps); // 15%..100% of image
+  if (step < 0) {
+    // Show answer: full cover (same as drawCover)
+    return null;
+  }
+  // fraction of image shown: start tiny (zoomed in a lot), grow each step
+  // step 0 → 12% of image (very close-up, blocky)
+  // step totalSteps → 65% (still bigger than real size, but you can tell what it is)
+  const minFrac = 0.10; // very zoomed in at step 0
+  const maxFrac = 0.65; // still zoomed at last step (before show answer)
+  const t = step / totalSteps; // 0..1
+  const fraction = minFrac + (maxFrac - minFrac) * t;
+
   const imgRatio = imgW / imgH;
   const canRatio = canW / canH;
   let sw, sh;
@@ -760,12 +778,33 @@ function drawRevealStep(src, step) {
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
     if (cfg.revealMode === 'zoom') {
-      const { sx, sy, sw, sh } = getZoomCrop(step, img.naturalWidth, img.naturalHeight, W, H);
-      ctx.imageSmoothingEnabled = step === totalSteps;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+      const crop = getZoomCrop(step, img.naturalWidth, img.naturalHeight, W, H);
+      if (!crop) {
+        // step -1 = show answer: normal full cover
+        ctx.imageSmoothingEnabled = true;
+        drawCover(ctx, img, W, H);
+      } else {
+        // Zoomed in: draw cropped portion scaled to fill canvas
+        // Apply slight pixelation at early steps for extra mystery
+        const { sx, sy, sw, sh } = crop;
+        const blockify = step < 2; // extra chunky at step 0-1
+        if (blockify) {
+          const offW = Math.ceil(W / 20), offH = Math.ceil(H / 20);
+          const off = document.createElement('canvas');
+          off.width = offW; off.height = offH;
+          const octx = off.getContext('2d');
+          octx.imageSmoothingEnabled = true;
+          octx.drawImage(img, sx, sy, sw, sh, 0, 0, offW, offH);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(off, 0, 0, W, H);
+        } else {
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+        }
+      }
     } else {
-      // Pixelate
-      if (step >= totalSteps || step === -1) {
+      // Pixelate mode
+      if (step < 0 || step >= totalSteps) {
         drawCover(ctx, img, W, H);
       } else {
         const blockSize = getPixelSize(step);
@@ -805,7 +844,7 @@ function drawCover(c, img, W, H) {
 
 document.getElementById('btn-reveal').addEventListener('click', function() {
   if (revealed) return;
-  if (currentStep >= totalSteps) { revealAnswer(); return; }
+  if (currentStep >= totalSteps) { revealAnswer(false); return; }
   currentStep++;
   drawRevealStep(queue[qIdx].imageUrl, currentStep);
   updatePtsBadge();
@@ -813,21 +852,21 @@ document.getElementById('btn-reveal').addEventListener('click', function() {
   document.getElementById('progress-bar').style.width = (currentStep/totalSteps*100) + '%';
   renderTeamBtns();
   playBeep();
-  if (currentStep >= totalSteps) setTimeout(revealAnswer, 400);
+  // Pixelate mode auto-reveals at final step; zoom mode keeps showing zoomed until Show Answer
+  if (cfg.revealMode !== 'zoom' && currentStep >= totalSteps) setTimeout(()=>revealAnswer(false), 400);
 });
 
-document.getElementById('btn-answer').addEventListener('click', revealAnswer);
+document.getElementById('btn-answer').addEventListener('click', ()=>revealAnswer(false));
 document.getElementById('btn-next').addEventListener('click', function() { qIdx++; loadQ(); });
 
-function revealAnswer() {
+function revealAnswer(skipRedraw) {
   if (revealed) return;
   revealed = true;
   const q = queue[qIdx];
-  // Show answer in bottom-right of image (no dark overlay)
   document.getElementById('ans-text').textContent = q.answer || '';
   if (q.answer) document.getElementById('ans-overlay').classList.add('show');
-  // Redraw fully sharp
-  drawRevealStep(q.imageUrl, -1);
+  // Only redraw full image when show-answer is explicit (not from a score button)
+  if (!skipRedraw) drawRevealStep(q.imageUrl, -1);
   document.getElementById('btn-next').disabled = false;
   document.getElementById('progress-bar').style.width = '100%';
   document.getElementById('reveal-badge').textContent = '✅ Revealed';
@@ -835,29 +874,44 @@ function revealAnswer() {
 }
 
 // ════════════════════════════════
-// SCORING — multiple players can score same question
+// SCORING — toggle-cancel per player, no image redraw on score
 // ════════════════════════════════
 function renderTeamBtns() {
-  const pts = getCurrentPts();
-  document.getElementById('team-btns').innerHTML = cfg.teamNames.slice(0, cfg.teams).map((name,i)=>`
-    <button class="tsb ${scoredSet.has(i)?'disabled':''}"
+  const pts = getCurrentPts(); // pts at THIS step for new scorers
+  document.getElementById('team-btns').innerHTML = cfg.teamNames.slice(0, cfg.teams).map((name,i)=>{
+    const isScored  = scoredSteps.has(i);
+    const scoredPts = isScored ? scoredSteps.get(i) : pts;
+    return `<button class="tsb ${isScored?'is-scored':''}"
       style="background:${TEAM_COLORS[i]};color:${i===0?'#1a1a00':'#fff'};"
-      ${scoredSet.has(i)?'disabled':''} data-team="${i}">
+      data-team="${i}">
       ${name}
       <span style="background:rgba(0,0,0,.2);padding:3px 9px;border-radius:6px;margin-left:6px;font-size:13px">
-        ${scoredSet.has(i)?'✓':'+'+pts}
+        ${isScored ? '✓ +'+scoredPts : '+'+pts}
       </span>
-    </button>`).join('');
+    </button>`;
+  }).join('');
+
   document.getElementById('team-btns').querySelectorAll('.tsb').forEach(btn=>{
     btn.addEventListener('click', function() {
       const ti = +this.dataset.team;
-      if (scoredSet.has(ti)) return;
-      scores[ti] = (scores[ti]||0) + getCurrentPts();
-      scoredSet.add(ti);
-      if (!revealed) revealAnswer();
-      renderScoreBar(ti);
-      renderTeamBtns();
-      playCorrect();
+      if (scoredSteps.has(ti)) {
+        // Toggle OFF — cancel score
+        const ptsToRemove = scoredSteps.get(ti);
+        scores[ti] = Math.max(0, (scores[ti]||0) - ptsToRemove);
+        scoredSteps.delete(ti);
+        renderScoreBar();
+        renderTeamBtns();
+      } else {
+        // Toggle ON — award pts at CURRENT step (not affected by future reveals)
+        const ptsNow = getCurrentPts();
+        scores[ti] = (scores[ti]||0) + ptsNow;
+        scoredSteps.set(ti, ptsNow);
+        // Show answer label but DON'T redraw image (keep current blur/zoom state)
+        revealAnswer(true); // skipRedraw = true
+        renderScoreBar(ti);
+        renderTeamBtns();
+        playCorrect();
+      }
     });
   });
 }
