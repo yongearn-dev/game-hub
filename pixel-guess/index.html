@@ -740,35 +740,30 @@ function updatePtsBadge() {
 // REVEAL — two modes
 // ════════════════════════════════
 function getPixelSize(step) {
+  // step 0 = very blocky (blockSize ~64)
+  // step totalSteps = still noticeable blocks (~8px) — about 50% clarity
+  // step -1 (show answer) = fully sharp (blockSize 1)
+  if (step < 0) return 1; // show answer: fully sharp
   const ratio = 1 - (step / totalSteps);
-  return Math.max(1, Math.round(64 * Math.pow(ratio, 1.6)));
+  // Minimum blockSize at last step = 8 (50% clarity feel)
+  return Math.max(8, Math.round(64 * Math.pow(ratio, 1.2)));
 }
 
-// Zoom mode: starts VERY ZOOMED IN (big/cropped, blocks visible) → shrinks toward full image each step
-// step 0 = maximum zoom (small centre crop fills canvas, blocky)
-// step totalSteps = ~1.5x still bigger than image (not fully out)
-// step -1 (show answer) = normal full cover size
+// Zoom mode: starts VERY ZOOMED IN (big/cropped) → shrinks each step, but never fully out
+// step 0 = 10% of image shown (extreme close-up, blocky)
+// step totalSteps = 50% of image shown (still clearly zoomed in)
+// step -1 (show answer) = null → drawCover handles it (full normal size)
 function getZoomCrop(step, imgW, imgH, canW, canH) {
-  if (step < 0) {
-    // Show answer: full cover (same as drawCover)
-    return null;
-  }
-  // fraction of image shown: start tiny (zoomed in a lot), grow each step
-  // step 0 → 12% of image (very close-up, blocky)
-  // step totalSteps → 65% (still bigger than real size, but you can tell what it is)
-  const minFrac = 0.10; // very zoomed in at step 0
-  const maxFrac = 0.65; // still zoomed at last step (before show answer)
-  const t = step / totalSteps; // 0..1
+  if (step < 0) return null; // show answer: handled by drawCover
+  const minFrac = 0.10; // extreme close-up at step 0
+  const maxFrac = 0.50; // still clearly zoomed at last step
+  const t = step / totalSteps;
   const fraction = minFrac + (maxFrac - minFrac) * t;
-
-  const imgRatio = imgW / imgH;
-  const canRatio = canW / canH;
+  const imgRatio = imgW / imgH, canRatio = canW / canH;
   let sw, sh;
   if (imgRatio > canRatio) { sh = imgH * fraction; sw = sh * canRatio; }
   else { sw = imgW * fraction; sh = sw / canRatio; }
-  const sx = (imgW - sw) / 2;
-  const sy = (imgH - sh) / 2;
-  return { sx, sy, sw, sh };
+  return { sx: (imgW-sw)/2, sy: (imgH-sh)/2, sw, sh };
 }
 
 function drawRevealStep(src, step) {
@@ -803,11 +798,12 @@ function drawRevealStep(src, step) {
         }
       }
     } else {
-      // Pixelate mode
-      if (step < 0 || step >= totalSteps) {
+      // Pixelate mode — getPixelSize handles step -1 (returns 1 = sharp)
+      const blockSize = getPixelSize(step);
+      if (blockSize <= 1) {
+        ctx.imageSmoothingEnabled = true;
         drawCover(ctx, img, W, H);
       } else {
-        const blockSize = getPixelSize(step);
         const offW = Math.ceil(W / blockSize), offH = Math.ceil(H / blockSize);
         const off = document.createElement('canvas');
         off.width = offW; off.height = offH;
@@ -844,7 +840,7 @@ function drawCover(c, img, W, H) {
 
 document.getElementById('btn-reveal').addEventListener('click', function() {
   if (revealed) return;
-  if (currentStep >= totalSteps) { revealAnswer(false); return; }
+  if (currentStep >= totalSteps) { fullReveal(); return; }
   currentStep++;
   drawRevealStep(queue[qIdx].imageUrl, currentStep);
   updatePtsBadge();
@@ -852,21 +848,33 @@ document.getElementById('btn-reveal').addEventListener('click', function() {
   document.getElementById('progress-bar').style.width = (currentStep/totalSteps*100) + '%';
   renderTeamBtns();
   playBeep();
-  // Pixelate mode auto-reveals at final step; zoom mode keeps showing zoomed until Show Answer
-  if (cfg.revealMode !== 'zoom' && currentStep >= totalSteps) setTimeout(()=>revealAnswer(false), 400);
+  // Neither mode auto-reveals at last step — player presses Show Answer explicitly
 });
 
-document.getElementById('btn-answer').addEventListener('click', ()=>revealAnswer(false));
+document.getElementById('btn-answer').addEventListener('click', ()=>fullReveal());
 document.getElementById('btn-next').addEventListener('click', function() { qIdx++; loadQ(); });
 
-function revealAnswer(skipRedraw) {
+// ─────────────────────────────────────────────
+// Two separate reveal actions:
+//   scoreOnly()  → player scored; image stays at current blur, NO answer text shown,
+//                  revealed stays FALSE so Reveal Step still works
+//   fullReveal() → Show Answer pressed; redraws full clear image + shows answer text
+// ─────────────────────────────────────────────
+function scoreOnly() {
+  // Show answer text at bottom-right? NO — intentionally omitted per request.
+  // Just lock in the score. Reveal Step still works.
+  // revealed stays FALSE.
+  document.getElementById('btn-next').disabled = false; // allow Next after scoring
+  // Keep progress bar and badge as-is
+}
+
+function fullReveal() {
   if (revealed) return;
   revealed = true;
   const q = queue[qIdx];
   document.getElementById('ans-text').textContent = q.answer || '';
   if (q.answer) document.getElementById('ans-overlay').classList.add('show');
-  // Only redraw full image when show-answer is explicit (not from a score button)
-  if (!skipRedraw) drawRevealStep(q.imageUrl, -1);
+  drawRevealStep(q.imageUrl, -1); // -1 = full clear image
   document.getElementById('btn-next').disabled = false;
   document.getElementById('progress-bar').style.width = '100%';
   document.getElementById('reveal-badge').textContent = '✅ Revealed';
@@ -874,10 +882,11 @@ function revealAnswer(skipRedraw) {
 }
 
 // ════════════════════════════════
-// SCORING — toggle-cancel per player, no image redraw on score
+// SCORING — toggle-cancel per player
+// Scoring does NOT reveal the image or show the answer text
 // ════════════════════════════════
 function renderTeamBtns() {
-  const pts = getCurrentPts(); // pts at THIS step for new scorers
+  const pts = getCurrentPts();
   document.getElementById('team-btns').innerHTML = cfg.teamNames.slice(0, cfg.teams).map((name,i)=>{
     const isScored  = scoredSteps.has(i);
     const scoredPts = isScored ? scoredSteps.get(i) : pts;
@@ -902,12 +911,11 @@ function renderTeamBtns() {
         renderScoreBar();
         renderTeamBtns();
       } else {
-        // Toggle ON — award pts at CURRENT step (not affected by future reveals)
+        // Toggle ON — award pts at CURRENT step
         const ptsNow = getCurrentPts();
         scores[ti] = (scores[ti]||0) + ptsNow;
         scoredSteps.set(ti, ptsNow);
-        // Show answer label but DON'T redraw image (keep current blur/zoom state)
-        revealAnswer(true); // skipRedraw = true
+        scoreOnly(); // image stays blurred, NO answer text
         renderScoreBar(ti);
         renderTeamBtns();
         playCorrect();
