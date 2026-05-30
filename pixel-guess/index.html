@@ -60,15 +60,48 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .sheet-input:focus{border-color:var(--primary);}
 .sheet-input::placeholder{color:var(--text2);}
 
-/* Category grid */
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px;}
-.cat-card{padding:12px 14px;background:var(--panel2);border-radius:12px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .15s;text-align:center;user-select:none;}
-.cat-card.sel{border-color:var(--accent);background:rgba(233,69,96,.12);}
-.cat-card:hover:not(.sel){border-color:rgba(255,255,255,.2);}
-.cat-card .cat-emoji{font-size:24px;margin-bottom:4px;}
-.cat-card .cat-name{font-size:13px;font-weight:700;color:var(--text2);}
+/* Category grid — cover photo cards */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:14px;}
+.cat-card{
+  border-radius:14px;border:2px solid rgba(255,255,255,.08);
+  cursor:pointer;transition:all .18s;
+  overflow:hidden;user-select:none;
+  position:relative;background:var(--panel2);
+}
+.cat-card.sel{border-color:var(--accent);}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4);border-color:rgba(255,255,255,.25);}
+.cat-card.sel:hover{border-color:var(--accent);}
+
+/* Thumbnail area */
+.cat-thumb{
+  width:100%;height:90px;
+  object-fit:cover;display:block;
+  background:var(--panel2);
+}
+/* Fallback: emoji placeholder when no thumb */
+.cat-thumb-fallback{
+  width:100%;height:90px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;background:var(--panel2);
+}
+/* Selected tick */
+.cat-card .sel-tick{
+  position:absolute;top:7px;right:7px;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;
+  opacity:0;transition:opacity .15s;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+.cat-card.sel .sel-tick{opacity:1;}
+
+/* Text area below thumb */
+.cat-info{padding:8px 10px 10px;}
+.cat-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:3px;}
+.cat-card:not(.sel) .cat-name{color:var(--text2);}
 .cat-card.sel .cat-name{color:var(--text);}
-.cat-card .cat-count{font-size:11px;color:var(--text2);margin-top:2px;}
+.cat-count{font-size:11px;color:var(--text2);}
 
 /* Upload */
 .drop-zone{border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;color:var(--text2);font-size:15px;}
@@ -385,17 +418,19 @@ const IMAGE_BASE = "https://yongearn-dev.github.io/game-hub/pixel-guess/images/"
 const SHEET_URL  = "https://opensheet.elk.sh/1nmgda-PSW0qNpEnT65HozbrbK4SPoOlfq3WlEIQSgf4/Sheet2";
 const TEAM_COLORS = ['#f5c542','#3498db','#e94560','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e74c3c','#8e44ad','#d35400'];
 
-// Sheet categories only — no built-in demo data
+// Category metadata — keys match sheet's category column exactly
+const THUMB_BASE = "https://yongearn-dev.github.io/game-hub/pixel-guess/images/thumbnails/";
 const CAT_META = {
-  'animal':              { emoji:'🦁', label:'Animals' },
-  'fruit':               { emoji:'🍓', label:'Fruits' },
-  'cuisine':             { emoji:'🍜', label:'Cuisine' },
-  'biblecharacter':      { emoji:'✝️', label:'Bible People' },
-  'biblestory':          { emoji:'📖', label:'Bible Stories' },
-  'countries & landmarks':{ emoji:'🗼', label:'Countries & Landmarks' },
-  'movie & game':        { emoji:'🎬', label:'Movies & Games' },
-  'nature':              { emoji:'🌿', label:'Nature' },
-  'Uploaded':            { emoji:'📁', label:'Uploaded' },
+  'animal':                { emoji:'🦁', label:'Animals',              thumb: THUMB_BASE+'animal.jpg' },
+  'fruit':                 { emoji:'🍓', label:'Fruits',               thumb: THUMB_BASE+'fruit.jpg' },
+  'food':                  { emoji:'🍜', label:'Food & Cuisine',        thumb: THUMB_BASE+'food.jpg' },
+  'bible character':       { emoji:'✝️', label:'Bible People',          thumb: THUMB_BASE+'bible-character.jpg' },
+  'bible story':           { emoji:'📖', label:'Bible Stories',         thumb: THUMB_BASE+'bible-story.jpg' },
+  'countries & landmarks': { emoji:'🗼', label:'Countries & Landmarks', thumb: THUMB_BASE+'countries-landmarks.jpg' },
+  'anime':                 { emoji:'⛩️', label:'Anime',                 thumb: THUMB_BASE+'anime.jpg' },
+  'harry potter':          { emoji:'⚡', label:'Harry Potter',           thumb: THUMB_BASE+'harry-potter.jpg' },
+  'movie':                 { emoji:'🎬', label:'Movies',                thumb: THUMB_BASE+'movie.jpg' },
+  'Uploaded':              { emoji:'📁', label:'Uploaded',              thumb: null },
 };
 
 const cfg = {
@@ -462,7 +497,7 @@ function sheetRowToItem(r) {
   return {
     id:       t(r.id),
     answer:   t(r.answer),
-    category: t(r.category) || 'Other',
+    category: (t(r.category) || 'Other').toLowerCase().trim(),
     variants,
   };
 }
@@ -476,14 +511,21 @@ function getAllLibItems() {
 // ════════════════════════════════
 function buildCatGrid(items) {
   const counts = {};
-  items.forEach(i => { const c=i.category||'Other'; counts[c]=(counts[c]||0)+1; });
+  items.forEach(i => { const c=(i.category||'Other').toLowerCase().trim(); counts[c]=(counts[c]||0)+1; });
   const wrap = document.getElementById('cat-grid-wrap');
   wrap.innerHTML = Object.entries(counts).map(([cat,n]) => {
-    const m = CAT_META[cat] || { emoji:'🎲', label:cat };
+    const m = CAT_META[cat] || CAT_META[cat.toLowerCase()] || { emoji:'🎲', label:cat, thumb:null };
+    const thumbHtml = m.thumb
+      ? `<img class="cat-thumb" src="${m.thumb}" alt="${m.label}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+         <div class="cat-thumb-fallback" style="display:none;">${m.emoji}</div>`
+      : `<div class="cat-thumb-fallback">${m.emoji}</div>`;
     return `<div class="cat-card" data-cat="${cat}" onclick="toggleCat('${cat}')">
-      <div class="cat-emoji">${m.emoji}</div>
-      <div class="cat-name">${m.label}</div>
-      <div class="cat-count">${n} questions</div>
+      <div class="sel-tick">✓</div>
+      ${thumbHtml}
+      <div class="cat-info">
+        <div class="cat-name">${m.label}</div>
+        <div class="cat-count">${n} questions</div>
+      </div>
     </div>`;
   }).join('');
   document.getElementById('cat-section').style.display = Object.keys(counts).length ? 'block' : 'none';
@@ -740,13 +782,12 @@ function updatePtsBadge() {
 // REVEAL — two modes
 // ════════════════════════════════
 function getPixelSize(step) {
-  // step 0 = very blocky (blockSize ~64)
-  // step totalSteps = still noticeable blocks (~8px) — about 50% clarity
-  // step -1 (show answer) = fully sharp (blockSize 1)
-  if (step < 0) return 1; // show answer: fully sharp
+  // step 0  → blockSize ~64 (very blocky)
+  // step N  → blockSize ~12 (40% clarity — recognisable but still a challenge)
+  // step -1 → blockSize 1  (show answer: fully sharp)
+  if (step < 0) return 1;
   const ratio = 1 - (step / totalSteps);
-  // Minimum blockSize at last step = 8 (50% clarity feel)
-  return Math.max(8, Math.round(64 * Math.pow(ratio, 1.2)));
+  return Math.max(12, Math.round(64 * Math.pow(ratio, 1.15)));
 }
 
 // Zoom mode: starts VERY ZOOMED IN (big/cropped) → shrinks each step, but never fully out
@@ -874,11 +915,65 @@ function fullReveal() {
   const q = queue[qIdx];
   document.getElementById('ans-text').textContent = q.answer || '';
   if (q.answer) document.getElementById('ans-overlay').classList.add('show');
-  drawRevealStep(q.imageUrl, -1); // -1 = full clear image
+  drawFullReveal(q.imageUrl); // special: natural ratio + blurred bg
   document.getElementById('btn-next').disabled = false;
   document.getElementById('progress-bar').style.width = '100%';
   document.getElementById('reveal-badge').textContent = '✅ Revealed';
   renderTeamBtns();
+}
+
+// Draw image at its NATURAL aspect ratio centred on canvas
+// Letterbox/pillarbox gaps filled with a blurred 50% version of the same image
+function drawFullReveal(src) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // ── Layer 1: blurred background (stretched to fill) ──
+    // Draw at full canvas size (stretched), then apply blur via small offscreen canvas
+    const blurSize = 4; // small offscreen = cheap blur
+    const bOff = document.createElement('canvas');
+    bOff.width = blurSize * 4; bOff.height = blurSize * 4; // tiny = very blurry when scaled up
+    const bCtx = bOff.getContext('2d');
+    bCtx.drawImage(img, 0, 0, bOff.width, bOff.height);
+    ctx.globalAlpha = 0.5;
+    ctx.imageSmoothingEnabled = true;
+    // Scale tiny blurry canvas back up to fill
+    ctx.drawImage(bOff, 0, 0, W, H);
+    ctx.globalAlpha = 1.0;
+
+    // ── Layer 2: image at natural aspect ratio, centred (letterbox/pillarbox) ──
+    const imgRatio = img.naturalWidth / img.naturalHeight;
+    const canRatio = W / H;
+    let dw, dh, dx, dy;
+    if (imgRatio > canRatio) {
+      // Landscape image in portrait-ish canvas → letterbox (bars top/bottom)
+      dw = W;
+      dh = Math.round(W / imgRatio);
+      dx = 0;
+      dy = Math.round((H - dh) / 2);
+    } else {
+      // Portrait image → pillarbox (bars left/right)
+      dh = H;
+      dw = Math.round(H * imgRatio);
+      dx = Math.round((W - dw) / 2);
+      dy = 0;
+    }
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, dx, dy, dw, dh);
+  };
+  img.onerror = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,.4)';
+    ctx.font = 'bold 20px Rubik,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⚠️ Image not found', canvas.width/2, canvas.height/2);
+  };
+  img.src = src;
 }
 
 // ════════════════════════════════
