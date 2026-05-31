@@ -24,11 +24,27 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .bg-glow span:nth-child(2){width:400px;height:400px;background:#e94560;bottom:-100px;right:-100px;}
 .bg-glow span:nth-child(3){width:350px;height:350px;background:#0f3460;top:30%;right:-80px;}
 
-/* ── Page title ── */
+/* ── Page title — fix emoji colour bleed ── */
 .page-title{text-align:center;padding:28px 0 22px;position:relative;z-index:1;}
 .back-btn{position:absolute;left:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:6px;color:var(--text2);font-size:14px;font-weight:700;text-decoration:none;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);transition:all .15s;}
 .back-btn:hover{background:rgba(255,255,255,.12);color:var(--text);}
-.page-title h1{font-family:'Rubik',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:900;background:linear-gradient(135deg,#a29bfe,#f5c542,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.page-title-inner{display:inline-flex;align-items:center;gap:14px;justify-content:center;}
+/* Emoji in separate span — NOT in gradient clip so it shows true colour */
+.page-title-icon{
+  font-size:clamp(32px,5vw,50px);
+  /* Undo any inherited background-clip so emoji renders normally */
+  -webkit-text-fill-color:initial;
+  background:none;
+}
+.page-title-text{
+  font-family:'Rubik',sans-serif;
+  font-size:clamp(28px,5vw,48px);
+  font-weight:900;
+  background:linear-gradient(135deg,#a29bfe,#f5c542,#e94560);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
 .page-title p{color:var(--text2);margin-top:6px;font-size:15px;}
 
 /* ── Sections ── */
@@ -43,6 +59,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .pill{padding:7px 14px;border-radius:50px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;color:var(--text2);user-select:none;}
 .pill.sel{background:var(--primary);color:#1a1a00;border-color:var(--primary);}
 .pill:hover:not(.sel){background:rgba(255,255,255,.12);color:var(--text);}
+/* Difficulty pills — match image-guess colours */
 .pill.diff-easy.sel{background:#2ecc71;border-color:#2ecc71;color:#fff;}
 .pill.diff-normal.sel{background:#3498db;border-color:#3498db;color:#fff;}
 .pill.diff-hard.sel{background:#e94560;border-color:#e94560;color:#fff;}
@@ -62,9 +79,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 /* ── Pool bar ── */
 .pool-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel2);border-radius:10px;margin-top:12px;font-size:13px;color:var(--text2);}
 .pool-dot{width:8px;height:8px;border-radius:50%;background:#555;flex-shrink:0;}
-.pool-dot.ok{background:var(--green);}
-.pool-dot.warn{background:var(--primary);}
-.pool-dot.err{background:var(--accent);}
+.pool-dot.ok{background:var(--green);}.pool-dot.warn{background:var(--primary);}.pool-dot.err{background:var(--accent);}
 
 /* ── Team/Player inputs ── */
 .team-inputs{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
@@ -81,8 +96,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 24px;font-family:'Rubik',sans-serif;font-size:16px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-decoration:none;}
-.btn:hover{transform:translateY(-2px);}
-.btn:active{transform:translateY(1px);}
+.btn:hover{transform:translateY(-2px);}.btn:active{transform:translateY(1px);}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
 .btn-primary{background:var(--primary);color:#1a1a00;box-shadow:0 5px 0 var(--primary2);}
 .btn-ghost{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.14);}
@@ -90,19 +104,12 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .btn-sm{padding:8px 16px;font-size:14px;}
 .cta-row{display:flex;gap:10px;justify-content:center;padding-top:4px;position:relative;z-index:1;}
 
-/* ══════════════════════════════════
-   GAME SCREEN
-══════════════════════════════════ */
+/* ══════════ GAME ══════════ */
 #screen-game{display:none;}
-
-/* Score bar */
 .score-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
 .chip{background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:50px;padding:7px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;transition:all .2s;}
 .chip.active-player{border-color:var(--primary);background:rgba(245,197,66,.15);transform:scale(1.06);}
-.chip.ha-target{border-color:var(--accent);background:rgba(233,69,96,.15);transform:scale(1.06);}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;}
-
-/* Progress */
 .q-progress{height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:10px;overflow:hidden;}
 .q-bar{height:100%;background:linear-gradient(90deg,#f5c542,#e94560);border-radius:2px;width:0;transition:width .4s;}
 .q-counter-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
@@ -114,7 +121,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .diff-hard{background:rgba(233,69,96,.18);color:#e94560;}
 .diff-extreme{background:rgba(155,89,182,.18);color:#9b59b6;}
 
-/* ── BIG ANSWER CARD ── */
+/* ── Big answer card — NO BLUR — question IS the answer ── */
 .answer-card{
   position:relative;
   background:var(--panel);
@@ -122,109 +129,61 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   border:2px solid rgba(255,255,255,.08);
   margin:0 auto 16px;
   max-width:860px;
-  min-height:220px;
+  min-height:200px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  padding:36px 40px;
+  padding:32px 36px;
   overflow:hidden;
 }
-/* Animated gradient bg */
-.answer-card::before{
-  content:'';
-  position:absolute;inset:0;
-  background:radial-gradient(ellipse at 50% 50%, rgba(162,155,254,.08) 0%, transparent 70%);
-  pointer-events:none;
-}
-/* Category badge top-left */
-.answer-card .cat-tag{
-  position:absolute;top:16px;left:20px;
-  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
-  color:var(--text2);background:rgba(255,255,255,.06);
-  padding:3px 10px;border-radius:12px;
-}
-/* Language tag top-right */
-.answer-card .lang-tag{
-  position:absolute;top:16px;right:20px;
-  font-size:11px;font-weight:700;color:var(--text2);
-}
-/* Primary answer line */
-.answer-line-zh{
-  font-family:'Rubik',sans-serif;
-  font-size:clamp(32px,6vw,72px);
-  font-weight:900;
-  color:var(--text);
-  text-align:center;
-  line-height:1.1;
-  letter-spacing:-1px;
-  text-shadow:0 0 40px rgba(162,155,254,.3);
-}
-/* Secondary answer line */
-.answer-line-th{
-  font-family:'Nunito',sans-serif;
-  font-size:clamp(22px,4vw,48px);
-  font-weight:700;
-  color:var(--text2);
-  text-align:center;
-  line-height:1.2;
-  margin-top:10px;
-}
-/* When only one language shown */
-.answer-line-single{
-  font-family:'Rubik',sans-serif;
-  font-size:clamp(36px,7vw,84px);
-  font-weight:900;
-  color:var(--text);
-  text-align:center;
-  line-height:1.1;
-  letter-spacing:-1px;
-}
-/* Blurred "question" — shown until reveal */
-.answer-blur{
-  filter:blur(18px);
-  transition:filter .4s ease;
-  user-select:none;
-  pointer-events:none;
-}
-.answer-blur.revealed{filter:blur(0);}
+.answer-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(162,155,254,.06) 0%,transparent 70%);pointer-events:none;}
+.cat-tag{position:absolute;top:14px;left:18px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);background:rgba(255,255,255,.06);padding:3px 10px;border-radius:12px;}
+.lang-tag{position:absolute;top:14px;right:18px;font-size:12px;font-weight:700;color:var(--text2);}
+/* Primary ZH line */
+.answer-line-zh{font-family:'Rubik',sans-serif;font-size:clamp(28px,5.5vw,64px);font-weight:900;color:var(--text);text-align:center;line-height:1.15;letter-spacing:-.5px;}
+/* Secondary TH line */
+.answer-line-th{font-family:'Nunito',sans-serif;font-size:clamp(20px,3.5vw,44px);font-weight:700;color:var(--text2);text-align:center;line-height:1.3;margin-top:8px;}
+/* Single language: bigger */
+.answer-line-single{font-family:'Rubik',sans-serif;font-size:clamp(36px,7vw,80px);font-weight:900;color:var(--text);text-align:center;line-height:1.1;letter-spacing:-.5px;}
+.diff-strip{position:absolute;bottom:0;left:0;right:0;height:4px;border-radius:0 0 22px 22px;}
+.diff-strip.easy{background:#2ecc71;}.diff-strip.normal{background:#3498db;}
+.diff-strip.hard{background:#e94560;}.diff-strip.extreme{background:#9b59b6;}
 
-/* Difficulty strip on card */
-.diff-strip{
-  position:absolute;bottom:0;left:0;right:0;
-  height:4px;border-radius:0 0 22px 22px;
+/* HA 3-second countdown overlay ON the answer card */
+.ha-countdown-overlay{
+  position:absolute;inset:0;z-index:10;
+  background:rgba(13,13,26,.92);
+  border-radius:22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  transition:opacity .3s;
 }
-.diff-strip.easy{background:#2ecc71;}
-.diff-strip.normal{background:#3498db;}
-.diff-strip.hard{background:#e94560;}
-.diff-strip.extreme{background:#9b59b6;}
+.ha-countdown-overlay.fade-out{opacity:0;pointer-events:none;}
+.ha-countdown-name{font-family:'Rubik',sans-serif;font-size:28px;font-weight:900;color:#fff;}
+.ha-countdown-label{font-size:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;}
+.ha-countdown-num{font-family:'Rubik',sans-serif;font-size:72px;font-weight:900;color:var(--accent);animation:haNumPop .5s ease-in-out;}
+@keyframes haNumPop{0%{transform:scale(.6);opacity:0;}60%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
 
-/* ── HA target banner ── */
-.ha-banner{
-  text-align:center;margin-bottom:12px;padding:12px 16px;
-  background:linear-gradient(135deg,rgba(233,69,96,.2),rgba(155,89,182,.2));
-  border:1px solid rgba(233,69,96,.3);border-radius:14px;
-}
-.ha-banner .ha-label{font-size:13px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-.ha-banner .ha-name{font-family:'Rubik',sans-serif;font-size:28px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(233,69,96,.6);}
-.ha-banner .ha-note{font-size:12px;color:var(--text2);margin-top:4px;}
+/* HA target banner above card */
+.ha-banner{text-align:center;margin-bottom:10px;padding:10px 16px;background:linear-gradient(135deg,rgba(233,69,96,.2),rgba(155,89,182,.2));border:1px solid rgba(233,69,96,.3);border-radius:14px;}
+.ha-banner .ha-label{font-size:12px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.ha-banner .ha-name{font-family:'Rubik',sans-serif;font-size:26px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(233,69,96,.6);}
+.ha-banner .ha-note{font-size:12px;color:var(--text2);margin-top:3px;}
 
-/* Bonus ×2 badge (Standard mode early bird) */
+/* Bonus ×2 */
 .bonus-banner{position:fixed;top:90px;right:20px;z-index:998;display:flex;flex-direction:column;align-items:center;transform:rotate(6deg);pointer-events:none;}
 .bonus-word{font-family:'Rubik',sans-serif;font-weight:900;font-size:16px;color:#f5c542;text-shadow:-2px -2px 0 #a06c00,2px -2px 0 #a06c00,-2px 2px 0 #a06c00,2px 2px 0 #a06c00,0 3px 8px rgba(0,0,0,.6);letter-spacing:1px;line-height:1;}
-.bonus-num{font-family:'Rubik',sans-serif;font-weight:900;font-size:48px;color:#fff700;line-height:.9;text-shadow:-3px -3px 0 #c47a00,3px -3px 0 #c47a00,-3px 3px 0 #c47a00,3px 3px 0 #c47a00,0 6px 20px rgba(245,197,66,.8);animation:bonusPulse 1s ease-in-out infinite;}
+.bonus-num{font-family:'Rubik',sans-serif;font-weight:900;font-size:48px;color:#fff700;line-height:.9;text-shadow:-3px -3px 0 #c47a00,3px -3px 0 #c47a00,-3px 3px 0 #c47a00,3px 3px 0 #c47a00,0 6px 20px rgba(245,197,66,.8);animation:bonusPulse 1s infinite;}
 @keyframes bonusPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
 
 /* ── Scoring buttons ── */
 .team-btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0;}
 .tsb{padding:16px 12px;border-radius:16px;border:none;font-family:'Rubik',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 5px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:space-between;}
-.tsb:hover{transform:translateY(-2px);}
-.tsb:active{transform:translateY(1px);}
+.tsb:hover{transform:translateY(-2px);}.tsb:active{transform:translateY(1px);}
 .tsb:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 .tsb.is-scored{box-shadow:0 0 0 3px #fff,0 5px 0 rgba(0,0,0,.3);}
 .tsb-pts{background:rgba(0,0,0,.2);padding:3px 10px;border-radius:8px;font-size:13px;white-space:nowrap;}
 
-/* Controls */
 .ctrl-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
 /* Timer */
@@ -237,10 +196,10 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .timeup-text{font-family:'Rubik',sans-serif;font-size:clamp(60px,15vw,140px);font-weight:900;color:var(--accent);text-shadow:0 0 60px rgba(233,69,96,.8);animation:timeupPop .6s both;}
 @keyframes timeupPop{0%{transform:scale(0) rotate(-20deg);opacity:0;}60%{transform:scale(1.2) rotate(3deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
 
-/* TA wait screen */
+/* TA wait */
 .ta-wait{text-align:center;padding:36px 20px;color:var(--text2);font-size:18px;line-height:1.7;}
 .ta-wait strong{display:block;font-family:'Rubik',sans-serif;font-size:30px;color:var(--text);margin-bottom:8px;}
-.ta-wait .ta-diff-info{display:inline-block;margin-top:8px;font-size:14px;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.08);}
+.ta-diff-info{display:inline-block;margin-top:8px;font-size:14px;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.08);}
 
 /* Round transition */
 #screen-round{display:none;text-align:center;padding:60px 20px;}
@@ -262,11 +221,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .lb li:nth-child(2){background:rgba(180,180,200,.1);}
 .lb li:nth-child(3){background:rgba(205,127,50,.12);}
 .lb-score{margin-left:auto;color:var(--primary);font-size:20px;}
-
-/* Screen shake */
-@keyframes screenShake{0%,100%{transform:none}10%{transform:translate(-6px,4px) rotate(-1deg)}20%{transform:translate(6px,-4px) rotate(1deg)}30%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}50%{transform:translate(-3px,2px)}70%,90%{transform:none}}
+@keyframes screenShake{0%,100%{transform:none}10%{transform:translate(-6px,4px) rotate(-1deg)}20%{transform:translate(6px,-4px) rotate(1deg)}30%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}70%,90%{transform:none}}
 .shake{animation:screenShake .6s both;}
-
 @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
@@ -275,15 +231,19 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 </head>
 <body>
 <div class="bg-glow"><span></span><span></span><span></span></div>
-<button class="btn bgm-btn" id="bgm-btn" title="BGM" style="position:fixed;bottom:18px;right:18px;z-index:900;width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);">🔇</button>
+<button class="btn" id="bgm-btn" style="position:fixed;bottom:18px;right:18px;z-index:900;width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);">🔇</button>
 <div class="wrap">
 
-<!-- ══════════════════ SETUP ══════════════════ -->
+<!-- ══════════ SETUP ══════════ -->
 <div id="screen-setup">
 <div class="page-title">
+  <!-- Fix 1: icon separate from gradient text -->
   <a href="../index.html" class="back-btn">← Back</a>
-  <h1>📺 Big Screen TV</h1>
-  <p>Read the clue, act it out, or describe it — no picture needed!</p>
+  <div class="page-title-inner">
+    <span class="page-title-icon">📺</span>
+    <span class="page-title-text">Big Screen TV</span>
+  </div>
+  <p>The question IS the answer — describe it, act it, or sing it!</p>
 </div>
 
 <!-- Language & Content -->
@@ -292,10 +252,11 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="settings-grid" style="margin-bottom:12px;">
     <div>
       <p style="font-size:12px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Display Language</p>
+      <!-- Fix 2: no emoji in language pills -->
       <div class="pill-row" id="lang-opts">
-        <div class="pill sel" data-val="both">🌏 Both (ZH + TH)</div>
-        <div class="pill" data-val="zh">🇨🇳 Chinese only</div>
-        <div class="pill" data-val="th">🇹🇭 Thai only</div>
+        <div class="pill sel" data-val="both">Both</div>
+        <div class="pill" data-val="zh">中</div>
+        <div class="pill" data-val="th">ไทย</div>
       </div>
     </div>
     <div>
@@ -328,10 +289,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="pill" data-val="timeAttack">⏱ Time Attack</div>
     <div class="pill mode-ha" data-val="heartAttack">❤️‍🔥 Heart Attack</div>
   </div>
-
   <!-- Standard -->
   <div id="std-sub" style="margin-top:14px;">
-    <p style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:8px;">⏱ TIMER PER QUESTION</p>
+    <p style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:8px;">TIMER PER QUESTION</p>
     <div class="pill-row" id="pq-opts">
       <div class="pill" data-val="15">15s</div>
       <div class="pill" data-val="20">20s</div>
@@ -339,11 +299,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="pill" data-val="45">45s</div>
       <div class="pill" data-val="0">Off</div>
     </div>
-    <p style="font-size:12px;color:var(--text2);margin-top:10px;line-height:1.5;">
-      💡 First 10 seconds → <strong>×2 points</strong>! (when timer is on)
-    </p>
+    <p style="font-size:12px;color:var(--text2);margin-top:10px;line-height:1.5;">💡 First 10 seconds → <strong>×2 points</strong>! (when timer is on)</p>
   </div>
-
   <!-- Time Attack -->
   <div id="ta-sub" style="display:none;margin-top:14px;">
     <p style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:8px;">TOTAL TIME PER PLAYER</p>
@@ -352,15 +309,17 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="pill" data-val="120">2 min</div>
       <div class="pill" data-val="180">3 min</div>
     </div>
+    <!-- Fix 5: skip info -->
+    <p style="font-size:12px;color:var(--text2);margin-top:10px;line-height:1.5;">⏭ Each player has <strong>3 skips</strong> per round.</p>
     <p style="font-size:12px;color:var(--text2);font-weight:700;margin:12px 0 8px;">DIFFICULTY PER PLAYER (multi-select)</p>
+    <!-- Fix 6: diff pills with proper colours -->
     <div class="ta-player-diff" id="ta-player-diff-wrap">
       <p style="font-size:12px;color:var(--text2);">Set players below first.</p>
     </div>
   </div>
-
   <!-- Heart Attack -->
   <div id="ha-sub" style="display:none;margin-top:14px;">
-    <p style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:8px;">⏱ TIME TO ANSWER</p>
+    <p style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:8px;">TIME TO ANSWER</p>
     <div class="pill-row" id="ha-time-opts">
       <div class="pill" data-val="10">10s</div>
       <div class="pill sel" data-val="15">15s</div>
@@ -369,7 +328,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
     <p style="font-size:12px;color:var(--text2);margin-top:10px;line-height:1.5;">
       ❤️ Each player starts with <strong>10 pts</strong>. Random player called each round.<br>
-      No answer in time → <strong>−1 pt</strong>.
+      Question shown after <strong>3-second countdown</strong>. No answer → <strong>−1 pt</strong>.
     </p>
   </div>
 </div>
@@ -420,10 +379,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 </div>
 </div><!-- /screen-setup -->
 
-<!-- ══════════════════ GAME ══════════════════ -->
+<!-- ══════════ GAME ══════════ -->
 <div id="screen-game">
   <div id="hub-timer" class="hub-timer hidden"></div>
-
   <div class="score-bar" id="score-bar"></div>
   <div class="q-progress"><div class="q-bar" id="q-bar"></div></div>
   <div class="q-counter-row">
@@ -432,43 +390,44 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
     <span class="q-diff-badge" id="q-diff"></span>
     <span style="font-size:12px;color:var(--text2);margin-left:auto;" id="q-unseen"></span>
   </div>
-
-  <!-- HA target banner -->
+  <!-- HA banner -->
   <div id="ha-banner" class="ha-banner hidden">
     <div class="ha-label">🎯 This question is for:</div>
     <div class="ha-name" id="ha-name">—</div>
     <div class="ha-note">No answer in time → −1 pt</div>
   </div>
-
   <!-- Bonus ×2 -->
   <div class="bonus-banner hidden" id="bonus-banner">
     <div class="bonus-word">BONUS</div>
     <div class="bonus-num">×2</div>
   </div>
-
-  <!-- BIG ANSWER CARD -->
+  <!-- Answer card -->
   <div class="answer-card" id="answer-card">
     <div class="cat-tag" id="cat-tag"></div>
     <div class="lang-tag" id="lang-tag"></div>
-    <div class="answer-blur" id="answer-blur-wrap">
-      <div class="answer-line-zh" id="ans-zh"></div>
-      <div class="answer-line-th" id="ans-th"></div>
+    <div id="answer-content">
+      <div id="ans-zh" class="answer-line-zh"></div>
+      <div id="ans-th" class="answer-line-th"></div>
+    </div>
+    <!-- Fix 7: HA countdown overlay on the card -->
+    <div class="ha-countdown-overlay hidden" id="ha-countdown-overlay">
+      <div class="ha-countdown-label">Question for</div>
+      <div class="ha-countdown-name" id="ha-countdown-name">—</div>
+      <div class="ha-countdown-num" id="ha-countdown-num">3</div>
     </div>
     <div class="diff-strip" id="diff-strip"></div>
   </div>
-
-  <!-- Team scoring buttons -->
+  <!-- Team buttons -->
   <div class="team-btns" id="team-btns"></div>
-
   <!-- Controls -->
   <div class="ctrl-row">
-    <button class="btn btn-ghost btn-sm" id="btn-answer">🔓 Show Answer</button>
+    <button class="btn btn-ghost btn-sm hidden" id="btn-hint-dummy" style="visibility:hidden">placeholder</button>
     <button class="btn btn-ghost btn-sm" id="btn-skip" style="display:none;">⏭ Skip (<span id="skip-count">3</span>)</button>
     <button class="btn btn-primary" id="btn-next">Next ▶</button>
   </div>
-</div><!-- /screen-game -->
+</div>
 
-<!-- ══════════════════ ROUND TRANSITION ══════════════════ -->
+<!-- ══════════ ROUND TRANSITION ══════════ -->
 <div id="screen-round">
   <div class="round-label">ROUND</div>
   <div class="round-num" id="round-trans-num">2</div>
@@ -477,7 +436,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   <button class="btn btn-primary" id="round-trans-btn" style="font-size:20px;padding:16px 40px;">▶ Start Round <span id="round-trans-num2">2</span></button>
 </div>
 
-<!-- ══════════════════ END ══════════════════ -->
+<!-- ══════════ END ══════════ -->
 <div id="screen-end">
   <h2>🎉 Game Over!</h2>
   <p class="sub">Final Leaderboard</p>
@@ -487,95 +446,77 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
     <a href="../index.html" class="btn btn-ghost" style="text-decoration:none">← Hub</a>
   </div>
 </div>
-
 </div><!-- /wrap -->
 
-<!-- Time-up overlay -->
 <div class="timeup-overlay hidden" id="timeup-overlay">
   <div class="timeup-text">TIME'S UP!</div>
 </div>
 
 <script>
 "use strict";
-
-// ═══════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════
+// ═══════ CONFIG ═══════
 const SHEET_URL = "https://opensheet.elk.sh/1nmgda-PSW0qNpEnT65HozbrbK4SPoOlfq3WlEIQSgf4/Sheet3";
 const DIFF_SCORE = { easy:2, normal:3, hard:7, extreme:10 };
 const TEAM_COLORS = ['#f5c542','#3498db','#e94560','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e74c3c','#8e44ad','#d35400'];
-
 const CAT_META = {
-  'animal':   { emoji:'🦁', label:'Animals' },
-  'fruit':    { emoji:'🍓', label:'Fruits' },
-  'food':     { emoji:'🍜', label:'Food' },
-  'bible character':{ emoji:'✝️', label:'Bible People' },
-  'bible story':    { emoji:'📖', label:'Bible Stories' },
-  'countries & landmarks':{ emoji:'🗼', label:'Countries & Landmarks' },
-  'anime':    { emoji:'⛩️', label:'Anime' },
-  'harry potter':{ emoji:'⚡', label:'Harry Potter' },
-  'movie':    { emoji:'🎬', label:'Movies' },
+  'animal':{'emoji':'🦁','label':'Animals'},
+  'fruit':{'emoji':'🍓','label':'Fruits'},
+  'food':{'emoji':'🍜','label':'Food'},
+  'bible character':{'emoji':'✝️','label':'Bible People'},
+  'bible story':{'emoji':'📖','label':'Bible Stories'},
+  'countries & landmarks':{'emoji':'🗼','label':'Countries & Landmarks'},
+  'anime':{'emoji':'⛩️','label':'Anime'},
+  'harry potter':{'emoji':'⚡','label':'Harry Potter'},
+  'movie':{'emoji':'🎬','label':'Movies'},
 };
 
-// ═══════════════════════════════════
-// APP STATE
-// ═══════════════════════════════════
-const cfg = {
-  mode:'standard', lang:'both',
-  difficulties: new Set(['easy','normal','hard','extreme']),
-  categories: new Set(),
-  questionsPerRound: 10, rounds: 1, numPlayers: 2,
-  perQuestionSec: 30, totalSec: 60, haSec: 15,
-  taPlayerDiff: {},
-  playerNames: Array.from({length:10},(_,i)=>'Player '+(i+1)),
+// ═══════ STATE ═══════
+const cfg={
+  mode:'standard',lang:'both',
+  difficulties:new Set(['easy','normal','hard','extreme']),
+  categories:new Set(),
+  questionsPerRound:10,rounds:1,numPlayers:2,
+  perQuestionSec:30,totalSec:60,haSec:15,
+  taPlayerDiff:{},
+  playerNames:Array.from({length:10},(_,i)=>'Player '+(i+1)),
 };
+let allQ=[],fullPool=[],usedIds=new Set();
+let queue=[],qIdx=0,currentQ=null;
+let scores=[],currentRound=1;
+let scoredMap=new Map(),questionStartTime=0;
+let haCurrentTarget=0,haDeducted=false,haCallCounts=[];
+let taTeamIndex=0,taPlaySeq=[],taSkipsLeft=3;
+let taTimerInterval=null,taTimeRemaining=0,taActive=false;
+let perQTimerInterval=null;
+let taPlayerStats=[];
 
-let allQ = [], fullPool = [], usedIds = new Set();
-let queue = [], qIdx = 0, currentQ = null;
-let scores = [], currentRound = 1;
-let revealed = false, scoredMap = new Map();
-let questionStartTime = 0;
-let haCurrentTarget = 0, haDeducted = false, haCallCounts = [];
-let taTeamIndex = 0, taPlaySeq = [], taSkipsLeft = 3;
-let taTimerInterval = null, taTimeRemaining = 0, taActive = false;
-let perQTimerInterval = null;
-let taPlayerStats = [];
-
-// ═══════════════════════════════════
-// SHEET LOAD
-// ═══════════════════════════════════
+// ═══════ LOAD SHEET ═══════
 setPoolStatus('warn','Loading questions…');
 fetch(SHEET_URL)
-  .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
   .then(data=>{
-    allQ = data.map(r=>{
-      const t = v=>(v||'').toString().trim();
-      return {
-        id:       t(r.id),
-        category: t(r.category).toLowerCase(),
-        difficulty: t(r.difficulty) || 'normal',
-        answerZH: t(r['answer ZH']||r.answer_ZH||r.answerZH||''),
-        answerTH: t(r['answer TH']||r.answer_TH||r.answerTH||''),
-      };
-    }).filter(q=>q.answerZH||q.answerTH);
-    buildCatGrid();
-    rebuildPool();
+    const t=v=>(v||'').toString().trim();
+    allQ=data.map(r=>({
+      id:t(r.id),
+      category:t(r.category).toLowerCase(),
+      difficulty:t(r.difficulty)||'normal',
+      answerZH:t(r['answer ZH']||r.answerZH||r.answer_ZH||''),
+      answerTH:t(r['answer TH']||r.answerTH||r.answer_TH||''),
+    })).filter(q=>q.answerZH||q.answerTH);
+    buildCatGrid();rebuildPool();
   })
-  .catch(()=>setPoolStatus('err','Could not load sheet.'));
+  .catch(()=>setPoolStatus('err','Could not load sheet. Check URL.'));
 
 function setPoolStatus(t,m){
   document.getElementById('pool-text').textContent=m;
   document.getElementById('pool-dot').className='pool-dot '+{ok:'ok',warn:'warn',err:'err'}[t];
 }
 
-// ═══════════════════════════════════
-// CATEGORIES
-// ═══════════════════════════════════
+// ═══════ CATEGORIES ═══════
 function buildCatGrid(){
   const counts={};
-  allQ.forEach(q=>{ const c=q.category||'other'; counts[c]=(counts[c]||0)+1; });
-  const grid=document.getElementById('cat-grid');
-  grid.innerHTML=Object.entries(counts).map(([cat,n])=>{
+  allQ.forEach(q=>{const c=q.category||'other';counts[c]=(counts[c]||0)+1;});
+  document.getElementById('cat-grid').innerHTML=Object.entries(counts).map(([cat,n])=>{
     const m=CAT_META[cat]||{emoji:'🎲',label:cat};
     return `<div class="cat-card sel" data-cat="${cat}" onclick="toggleCat('${cat}')">
       <div class="cat-check">✓</div>
@@ -584,56 +525,45 @@ function buildCatGrid(){
   }).join('');
   cfg.categories=new Set(Object.keys(counts));
 }
-
 function toggleCat(cat){
   if(cfg.categories.has(cat)){if(cfg.categories.size>1)cfg.categories.delete(cat);}
   else cfg.categories.add(cat);
   document.querySelectorAll('#cat-grid .cat-card').forEach(c=>{
-    const sel=cfg.categories.has(c.dataset.cat);
-    c.classList.toggle('sel',sel);
-    c.querySelector('.cat-check').textContent=sel?'✓':'';
+    const s=cfg.categories.has(c.dataset.cat);
+    c.classList.toggle('sel',s);
+    c.querySelector('.cat-check').textContent=s?'✓':'';
   });
   rebuildPool();
 }
-
 function rebuildPool(){
-  fullPool=allQ.filter(q=>
-    cfg.categories.has(q.category) &&
-    cfg.difficulties.has(q.difficulty) &&
-    (q.answerZH||q.answerTH)
-  );
-  const unseen=fullPool.filter(q=>!usedIds.has(q.id)).length;
-  if(fullPool.length===0) setPoolStatus('err','No questions match filters.');
-  else setPoolStatus('ok',fullPool.length+' questions · '+unseen+' unseen');
-  document.getElementById('start-btn').disabled=fullPool.length===0;
+  fullPool=allQ.filter(q=>cfg.categories.has(q.category)&&cfg.difficulties.has(q.difficulty)&&(q.answerZH||q.answerTH));
+  const un=fullPool.filter(q=>!usedIds.has(q.id)).length;
+  setPoolStatus(fullPool.length?'ok':'err',fullPool.length?fullPool.length+' questions · '+un+' unseen':'No questions match filters.');
+  document.getElementById('start-btn').disabled=!fullPool.length;
 }
 
-// ═══════════════════════════════════
-// SETUP UI
-// ═══════════════════════════════════
+// ═══════ SETUP UI ═══════
 function initPills(id,cb){
   document.getElementById(id).querySelectorAll('.pill').forEach(p=>{
     p.addEventListener('click',function(){
       document.getElementById(id).querySelectorAll('.pill').forEach(x=>x.classList.remove('sel'));
-      this.classList.add('sel'); cb(this.dataset.val);
+      this.classList.add('sel');cb(this.dataset.val);
     });
   });
 }
-initPills('lang-opts', v=>{ cfg.lang=v; });
-initPills('mode-opts', v=>{
+initPills('lang-opts',v=>{cfg.lang=v;});
+initPills('mode-opts',v=>{
   cfg.mode=v;
   document.getElementById('std-sub').style.display=v==='standard'?'block':'none';
   document.getElementById('ta-sub').style.display=v==='timeAttack'?'block':'none';
   document.getElementById('ha-sub').style.display=v==='heartAttack'?'block':'none';
 });
-initPills('pq-opts',      v=>{ cfg.perQuestionSec=+v; });
-initPills('total-opts',   v=>{ cfg.totalSec=+v; });
-initPills('ha-time-opts', v=>{ cfg.haSec=+v; });
-initPills('q-opts',       v=>{ cfg.questionsPerRound=+v; });
-initPills('round-opts',   v=>{ cfg.rounds=+v; });
-initPills('player-count-opts', v=>{ renderPlayerInputs(+v); });
-
-// Difficulty multi-select
+initPills('pq-opts',v=>{cfg.perQuestionSec=+v;});
+initPills('total-opts',v=>{cfg.totalSec=+v;});
+initPills('ha-time-opts',v=>{cfg.haSec=+v;});
+initPills('q-opts',v=>{cfg.questionsPerRound=+v;});
+initPills('round-opts',v=>{cfg.rounds=+v;});
+initPills('player-count-opts',v=>{renderPlayerInputs(+v);});
 document.getElementById('diff-opts').querySelectorAll('.pill').forEach(p=>{
   p.addEventListener('click',function(){
     const v=this.dataset.val;
@@ -652,20 +582,26 @@ function renderPlayerInputs(n){
         value="${cfg.playerNames[i]||'Player '+(i+1)}" data-ti="${i}"/>
     </div>`).join('');
   document.getElementById('team-inputs').querySelectorAll('input').forEach(inp=>{
-    inp.addEventListener('input',function(){ cfg.playerNames[+this.dataset.ti]=this.value||'Player '+(+this.dataset.ti+1); refreshTAPlayerDiff(); });
+    inp.addEventListener('input',function(){cfg.playerNames[+this.dataset.ti]=this.value||'Player '+(+this.dataset.ti+1);refreshTAPlayerDiff();});
   });
   refreshTAPlayerDiff();
 }
 renderPlayerInputs(2);
 
+// Fix 6: TA diff pills use correct difficulty colours
 function refreshTAPlayerDiff(){
   const wrap=document.getElementById('ta-player-diff-wrap');
-  const DIFFS=[{v:'easy',l:'😊 Easy'},{v:'normal',l:'😐 Normal'},{v:'hard',l:'😤 Hard'},{v:'extreme',l:'💀 Extreme'}];
+  const DIFFS=[
+    {v:'easy',l:'😊 Easy',cls:'diff-easy'},
+    {v:'normal',l:'😐 Normal',cls:'diff-normal'},
+    {v:'hard',l:'😤 Hard',cls:'diff-hard'},
+    {v:'extreme',l:'💀 Extreme',cls:'diff-extreme'},
+  ];
   wrap.innerHTML=Array.from({length:cfg.numPlayers},(_,i)=>{
-    if(!(cfg.taPlayerDiff[i] instanceof Set)) cfg.taPlayerDiff[i]=new Set(['easy','normal','hard','extreme']);
+    if(!(cfg.taPlayerDiff[i] instanceof Set))cfg.taPlayerDiff[i]=new Set(['easy','normal','hard','extreme']);
     const pills=DIFFS.map(d=>{
       const s=cfg.taPlayerDiff[i].has(d.v)?'sel':'';
-      return `<span class="pill ${s}" style="font-size:12px;padding:4px 10px;" data-pi="${i}" data-dv="${d.v}">${d.l}</span>`;
+      return `<span class="pill ${d.cls} ${s}" style="font-size:12px;padding:4px 10px;" data-pi="${i}" data-dv="${d.v}">${d.l}</span>`;
     }).join('');
     return `<div class="ta-player-diff-row">
       <div class="team-dot" style="background:${TEAM_COLORS[i]};margin-right:2px;flex-shrink:0;"></div>
@@ -676,7 +612,7 @@ function refreshTAPlayerDiff(){
   wrap.querySelectorAll('.pill[data-pi]').forEach(p=>{
     p.addEventListener('click',function(){
       const pi=+this.dataset.pi,dv=this.dataset.dv;
-      if(!(cfg.taPlayerDiff[pi] instanceof Set)) cfg.taPlayerDiff[pi]=new Set(['easy','normal','hard','extreme']);
+      if(!(cfg.taPlayerDiff[pi] instanceof Set))cfg.taPlayerDiff[pi]=new Set(['easy','normal','hard','extreme']);
       const s=cfg.taPlayerDiff[pi];
       if(s.has(dv)){if(s.size>1){s.delete(dv);this.classList.remove('sel');}}
       else{s.add(dv);this.classList.add('sel');}
@@ -684,88 +620,68 @@ function refreshTAPlayerDiff(){
   });
 }
 
-// ═══════════════════════════════════
-// START
-// ═══════════════════════════════════
+// ═══════ START ═══════
 document.getElementById('start-btn').addEventListener('click',function(){
   document.getElementById('team-inputs').querySelectorAll('input').forEach((inp,i)=>{
     cfg.playerNames[i]=inp.value.trim()||'Player '+(i+1);
   });
   scores=new Array(cfg.numPlayers).fill(cfg.mode==='heartAttack'?10:0);
   haCallCounts=new Array(cfg.numPlayers).fill(0);
-  currentRound=1; usedIds=new Set(); qIdx=0;
-  taTeamIndex=0; taActive=false;
+  currentRound=1;usedIds=new Set();qIdx=0;
+  taTeamIndex=0;taActive=false;
   taPlayerStats=Array.from({length:cfg.numPlayers},()=>({correct:0,diffBreakdown:{easy:0,normal:0,hard:0,extreme:0},baseScore:0}));
-  taPlaySeq=Array.from({length:cfg.numPlayers},(_,i)=>{
-    const start=Math.floor(Math.random()*cfg.numPlayers);
-    return (start+i)%cfg.numPlayers;
-  });
-  // De-dup taPlaySeq
-  taPlaySeq=[...new Set(taPlaySeq)];
-  while(taPlaySeq.length<cfg.numPlayers) taPlaySeq.push(taPlaySeq.length);
-  buildQueue(); showScreen('game');
-  if(cfg.mode==='timeAttack') waitForNextPlayer();
+  // Random start order for TA
+  const startIdx=Math.floor(Math.random()*cfg.numPlayers);
+  taPlaySeq=Array.from({length:cfg.numPlayers},(_,i)=>(startIdx+i)%cfg.numPlayers);
+  buildQueue();showScreen('game');
+  if(cfg.mode==='timeAttack')waitForNextPlayer();
   else loadQ();
 });
 
-// ═══════════════════════════════════
-// QUEUE BUILDER
-// ═══════════════════════════════════
+// ═══════ QUEUE ═══════
 function buildQueue(){
   let pool=fullPool;
   if(cfg.mode==='timeAttack'){
     const ti=taPlaySeq[taTeamIndex];
-    const diffSet=cfg.taPlayerDiff[ti];
-    if(diffSet instanceof Set&&diffSet.size>0){
-      const p=fullPool.filter(q=>diffSet.has(q.difficulty));
-      if(p.length) pool=p;
-    }
-    const shuffled=[...pool]; shuffle(shuffled);
-    queue=shuffled; qIdx=0; return;
+    const ds=cfg.taPlayerDiff[ti];
+    if(ds instanceof Set&&ds.size>0){const p=fullPool.filter(q=>ds.has(q.difficulty));if(p.length)pool=p;}
+    queue=[...pool];shuffle(queue);qIdx=0;return;
   }
-  let unseen=pool.filter(q=>!usedIds.has(q.id));
-  if(!unseen.length){usedIds.clear();unseen=[...pool];}
-  shuffle(unseen);
-  const n=cfg.questionsPerRound===999?unseen.length:Math.min(cfg.questionsPerRound,unseen.length);
-  queue=unseen.slice(0,n); qIdx=0;
+  let un=pool.filter(q=>!usedIds.has(q.id));
+  if(!un.length){usedIds.clear();un=[...pool];}
+  shuffle(un);
+  queue=un.slice(0,cfg.questionsPerRound===999?un.length:Math.min(cfg.questionsPerRound,un.length));
+  qIdx=0;
 }
 
-// ═══════════════════════════════════
-// LOAD QUESTION
-// ═══════════════════════════════════
+// ═══════ LOAD QUESTION ═══════
 function loadQ(){
   stopPerQTimer();
   if(cfg.mode==='timeAttack'){
-    if(!taActive) return;
+    // Fix 4: guard — do nothing if TA not active
+    if(!taActive)return;
     if(qIdx>=queue.length){
       const last=queue[queue.length-1]?.id;
       shuffle(queue);
-      if(queue[0]?.id===last&&queue.length>1){const t=queue[0];queue[0]=queue[1];queue[1]=t;}
+      if(queue[0]?.id===last&&queue.length>1){const tmp=queue[0];queue[0]=queue[1];queue[1]=tmp;}
       qIdx=0;
     }
   } else {
     if(qIdx>=queue.length){
-      if(currentRound<cfg.rounds) showRoundTransition(currentRound+1);
+      if(currentRound<cfg.rounds)showRoundTransition(currentRound+1);
       else endGame();
       return;
     }
   }
 
-  currentQ=queue[qIdx]; qIdx++;
-  if(cfg.mode!=='timeAttack') usedIds.add(currentQ.id);
-  revealed=false; scoredMap=new Map(); haDeducted=false;
-
-  if(cfg.mode==='heartAttack'){
-    const minC=Math.min(...haCallCounts);
-    const cands=haCallCounts.map((c,i)=>c===minC?i:-1).filter(i=>i>=0);
-    haCurrentTarget=cands[Math.floor(Math.random()*cands.length)];
-    haCallCounts[haCurrentTarget]++;
-  }
+  currentQ=queue[qIdx];qIdx++;
+  if(cfg.mode!=='timeAttack')usedIds.add(currentQ.id);
+  scoredMap=new Map();haDeducted=false;
 
   const diff=currentQ.difficulty||'normal';
   const basePts=DIFF_SCORE[diff]||2;
 
-  // Progress UI
+  // UI
   const qTotal=cfg.mode==='timeAttack'?'∞':queue.length;
   document.getElementById('q-bar').style.width=cfg.mode==='timeAttack'?'100%':((qIdx-1)/queue.length*100)+'%';
   document.getElementById('q-counter').textContent='Q '+qIdx+' / '+qTotal;
@@ -773,103 +689,111 @@ function loadQ(){
   const db=document.getElementById('q-diff');
   db.textContent=diff.charAt(0).toUpperCase()+diff.slice(1)+' +'+basePts;
   db.className='q-diff-badge diff-'+diff;
-  const unseen=fullPool.filter(q=>!usedIds.has(q.id)).length;
-  document.getElementById('q-unseen').textContent=cfg.mode==='timeAttack'?'':unseen+' unseen';
+  document.getElementById('q-unseen').textContent=cfg.mode==='timeAttack'?'':fullPool.filter(q=>!usedIds.has(q.id)).length+' unseen';
 
-  // HA banner
-  document.getElementById('ha-banner').classList.toggle('hidden',cfg.mode!=='heartAttack');
-  if(cfg.mode==='heartAttack') document.getElementById('ha-name').textContent=cfg.playerNames[haCurrentTarget];
-
-  // Answer card — START BLURRED
+  // Category & lang tag
   const m=CAT_META[currentQ.category]||{emoji:'🎲',label:currentQ.category};
   document.getElementById('cat-tag').textContent=m.emoji+' '+m.label;
-  document.getElementById('lang-tag').textContent=cfg.lang==='zh'?'🇨🇳':cfg.lang==='th'?'🇹🇭':'🇨🇳🇹🇭';
+  document.getElementById('lang-tag').textContent=cfg.lang==='zh'?'中':cfg.lang==='th'?'ไทย':'中 ⁄ ไทย';
   document.getElementById('diff-strip').className='diff-strip '+diff;
 
-  // Set text content (hidden behind blur)
-  const blurWrap=document.getElementById('answer-blur-wrap');
-  blurWrap.classList.remove('revealed');
-  blurWrap.classList.add('answer-blur');
-
+  // Fill answer text
   const zhEl=document.getElementById('ans-zh');
   const thEl=document.getElementById('ans-th');
-
   if(cfg.lang==='zh'){
-    zhEl.textContent=currentQ.answerZH; zhEl.className='answer-line-single';
-    thEl.textContent=''; thEl.style.display='none';
+    zhEl.textContent=currentQ.answerZH;zhEl.className='answer-line-single';zhEl.style.display='';
+    thEl.textContent='';thEl.style.display='none';
   } else if(cfg.lang==='th'){
-    zhEl.textContent=''; zhEl.style.display='none';
-    thEl.textContent=currentQ.answerTH; thEl.className='answer-line-single'; thEl.style.display='block';
+    zhEl.textContent='';zhEl.style.display='none';
+    thEl.textContent=currentQ.answerTH;thEl.className='answer-line-single';thEl.style.display='';
   } else {
-    zhEl.textContent=currentQ.answerZH; zhEl.className='answer-line-zh'; zhEl.style.display='';
-    thEl.textContent=currentQ.answerTH; thEl.className='answer-line-th'; thEl.style.display='';
+    zhEl.textContent=currentQ.answerZH;zhEl.className='answer-line-zh';zhEl.style.display='';
+    thEl.textContent=currentQ.answerTH;thEl.className='answer-line-th';thEl.style.display='';
   }
 
-  // Show/hide Next & Skip
+  // Buttons visibility
   document.getElementById('btn-next').style.display=cfg.mode==='standard'?'':'none';
   const skipBtn=document.getElementById('btn-skip');
   skipBtn.style.display=cfg.mode==='timeAttack'?'':'none';
-  skipBtn.disabled=(taSkipsLeft<=0);
+  skipBtn.disabled=taSkipsLeft<=0;
   document.getElementById('skip-count').textContent=taSkipsLeft;
-  document.getElementById('btn-answer').style.display='';
   document.getElementById('bonus-banner').classList.add('hidden');
 
   questionStartTime=Date.now();
   renderScoreBar();
+
+  // Fix 7: HA — show 3-second countdown overlay, then show question
+  if(cfg.mode==='heartAttack'){
+    const minC=Math.min(...haCallCounts);
+    const cands=haCallCounts.map((c,i)=>c===minC?i:-1).filter(i=>i>=0);
+    haCurrentTarget=cands[Math.floor(Math.random()*cands.length)];
+    haCallCounts[haCurrentTarget]++;
+    document.getElementById('ha-banner').classList.remove('hidden');
+    document.getElementById('ha-name').textContent=cfg.playerNames[haCurrentTarget];
+    // Show countdown overlay, hide answer content temporarily
+    document.getElementById('answer-content').style.opacity='0';
+    document.getElementById('team-btns').innerHTML='';
+    showHACountdown(3,()=>{
+      document.getElementById('answer-content').style.opacity='1';
+      renderTeamBtns();
+      questionStartTime=Date.now(); // reset timer start after countdown
+      startPerQTimer(cfg.haSec,()=>{
+        if(!haDeducted){haDeducted=true;scores[haCurrentTarget]=Math.max(0,(scores[haCurrentTarget]||0)-1);renderScoreBar();}
+        flashTimeUp();
+        setTimeout(()=>loadQ(),2200);
+      });
+    });
+    return;
+  }
+
+  document.getElementById('ha-banner').classList.toggle('hidden',cfg.mode!=='heartAttack');
   renderTeamBtns();
 
-  // Start timer
+  // Standard timer
   if(cfg.mode==='standard'&&cfg.perQuestionSec>0){
     document.getElementById('bonus-banner').classList.remove('hidden');
-    startPerQTimer(cfg.perQuestionSec,()=>{ showAnswer(); });
-  }
-  if(cfg.mode==='heartAttack'){
-    startPerQTimer(cfg.haSec,()=>{
-      if(!haDeducted){haDeducted=true;scores[haCurrentTarget]=Math.max(0,(scores[haCurrentTarget]||0)-1);renderScoreBar();}
-      showAnswer(); flashTimeUp();
-      setTimeout(()=>loadQ(),2200);
-    });
+    startPerQTimer(cfg.perQuestionSec,()=>{renderTeamBtns();});
   }
 }
 
-// ═══════════════════════════════════
-// SHOW ANSWER
-// ═══════════════════════════════════
-function showAnswer(){
-  stopPerQTimer();
-  document.getElementById('bonus-banner').classList.add('hidden');
-  document.getElementById('btn-answer').style.display='none';
-  const blurWrap=document.getElementById('answer-blur-wrap');
-  blurWrap.classList.remove('answer-blur');
-  blurWrap.classList.add('revealed');
-  revealed=true;
-  renderTeamBtns();
-  // TA/HA: auto-advance
-  if(cfg.mode==='timeAttack'||cfg.mode==='heartAttack'){
-    setTimeout(()=>{ if(cfg.mode==='heartAttack'||(cfg.mode==='timeAttack'&&taActive)) loadQ(); },1500);
-  }
+// Fix 7: Heart Attack 3-second countdown on the card
+function showHACountdown(sec,onDone){
+  const overlay=document.getElementById('ha-countdown-overlay');
+  const numEl=document.getElementById('ha-countdown-num');
+  const nameEl=document.getElementById('ha-countdown-name');
+  overlay.classList.remove('hidden','fade-out');
+  nameEl.textContent=cfg.playerNames[haCurrentTarget];
+  numEl.textContent=sec;
+  let n=sec;
+  const tick=setInterval(()=>{
+    n--;
+    if(n<=0){
+      clearInterval(tick);
+      overlay.classList.add('fade-out');
+      setTimeout(()=>{overlay.classList.add('hidden');onDone();},300);
+    } else {
+      numEl.textContent=n;
+      numEl.style.animation='none';
+      numEl.offsetHeight; // reflow
+      numEl.style.animation='haNumPop .5s ease-in-out';
+      playTick();
+    }
+  },1000);
+  playTick();
 }
-document.getElementById('btn-answer').addEventListener('click',showAnswer);
-document.getElementById('btn-next').addEventListener('click',()=>{ if(cfg.mode==='standard') loadQ(); });
 
-// ═══════════════════════════════════
-// TEAM BUTTONS — toggle cancel
-// ═══════════════════════════════════
+// ═══════ TEAM BUTTONS — toggle cancel ═══════
 function renderTeamBtns(){
   const elapsed=(Date.now()-questionStartTime)/1000;
-  const bonusActive=cfg.mode==='standard'&&cfg.perQuestionSec>0&&elapsed<10&&!revealed;
-  if(!bonusActive) document.getElementById('bonus-banner').classList.add('hidden');
-
-  // TA: only active player; HA: only target; Standard: all
-  let show=[];
-  if(cfg.mode==='timeAttack') show=[taPlaySeq[taTeamIndex]];
-  else if(cfg.mode==='heartAttack') show=[haCurrentTarget];
-  else show=Array.from({length:cfg.numPlayers},(_,i)=>i);
-
+  const bonusActive=cfg.mode==='standard'&&cfg.perQuestionSec>0&&elapsed<10;
+  if(!bonusActive)document.getElementById('bonus-banner').classList.add('hidden');
   const diff=currentQ?.difficulty||'normal';
   const basePts=DIFF_SCORE[diff]||2;
   const displayPts=bonusActive?basePts*2:basePts;
-
+  let show=[];
+  if(cfg.mode==='timeAttack')show=[taPlaySeq[taTeamIndex]];
+  else if(cfg.mode==='heartAttack')show=[haCurrentTarget];
+  else show=Array.from({length:cfg.numPlayers},(_,i)=>i);
   document.getElementById('team-btns').innerHTML=show.map(i=>{
     const isScored=scoredMap.has(i);
     const sp=isScored?scoredMap.get(i):displayPts;
@@ -878,7 +802,6 @@ function renderTeamBtns(){
       <span class="tsb-pts">${isScored?'✓ +'+sp:'+'+displayPts}</span>
     </button>`;
   }).join('');
-
   document.getElementById('team-btns').querySelectorAll('.tsb').forEach(btn=>{
     btn.addEventListener('click',function(){
       const ti=+this.dataset.team;
@@ -886,24 +809,25 @@ function renderTeamBtns(){
         scores[ti]=Math.max(0,(scores[ti]||0)-scoredMap.get(ti));
         scoredMap.delete(ti);
       } else {
-        const elapsed2=(Date.now()-questionStartTime)/1000;
-        const bonus=cfg.mode==='standard'&&cfg.perQuestionSec>0&&elapsed2<10&&!revealed;
-        const diff2=currentQ?.difficulty||'normal';
-        const pts=(bonus?2:1)*(DIFF_SCORE[diff2]||2);
+        const e2=(Date.now()-questionStartTime)/1000;
+        const bonus=cfg.mode==='standard'&&cfg.perQuestionSec>0&&e2<10;
+        const d=currentQ?.difficulty||'normal';
+        const pts=(bonus?2:1)*(DIFF_SCORE[d]||2);
         scores[ti]=(scores[ti]||0)+pts;
         scoredMap.set(ti,pts);
-        if(cfg.mode==='heartAttack') haDeducted=true;
+        if(cfg.mode==='heartAttack')haDeducted=true;
         if(cfg.mode==='timeAttack'&&taPlayerStats[ti]){
           taPlayerStats[ti].correct++;
-          taPlayerStats[ti].diffBreakdown[diff2]=(taPlayerStats[ti].diffBreakdown[diff2]||0)+1;
-          taPlayerStats[ti].baseScore+=DIFF_SCORE[diff2]||2;
+          taPlayerStats[ti].diffBreakdown[d]=(taPlayerStats[ti].diffBreakdown[d]||0)+1;
+          taPlayerStats[ti].baseScore+=DIFF_SCORE[d]||2;
         }
-        if(!revealed) showAnswer();
-        playCorrect();
-        if(bonus) playBonus();
+        playCorrect();if(bonus)playBonus();
+        // TA/HA auto-advance after scoring
+        if(cfg.mode==='timeAttack'||cfg.mode==='heartAttack'){
+          setTimeout(()=>{if(cfg.mode==='heartAttack'||(cfg.mode==='timeAttack'&&taActive))loadQ();},1500);
+        }
       }
-      renderScoreBar(ti);
-      renderTeamBtns();
+      renderScoreBar(ti);renderTeamBtns();
     });
   });
 }
@@ -920,12 +844,21 @@ function renderScoreBar(hi){
   }).join('');
 }
 
-// ═══════════════════════════════════
-// ROUND TRANSITION
-// ═══════════════════════════════════
+// ═══════ STANDARD NEXT ═══════
+document.getElementById('btn-next').addEventListener('click',()=>{if(cfg.mode==='standard')loadQ();});
+
+// ═══════ SKIP (TA only, 3 per player per round) ═══════
+document.getElementById('btn-skip').addEventListener('click',function(){
+  if(cfg.mode!=='timeAttack'||!taActive||taSkipsLeft<=0)return;
+  taSkipsLeft--;
+  document.getElementById('skip-count').textContent=taSkipsLeft;
+  this.disabled=(taSkipsLeft<=0);
+  loadQ();
+});
+
+// ═══════ ROUND TRANSITION ═══════
 function showRoundTransition(next){
-  stopPerQTimer();
-  showScreen('round');
+  stopPerQTimer();showScreen('round');
   document.getElementById('round-trans-num').textContent=next;
   document.getElementById('round-trans-num2').textContent=next;
   document.getElementById('round-trans-scores').innerHTML=Array.from({length:cfg.numPlayers},(_,i)=>`
@@ -933,59 +866,65 @@ function showRoundTransition(next){
       <div class="rc-name" style="color:${TEAM_COLORS[i]}">${cfg.playerNames[i]}</div>
       <div class="rc-score">${scores[i]||0}</div>
     </div>`).join('');
-  document.getElementById('round-trans-btn').onclick=function(){
-    currentRound=next; buildQueue(); showScreen('game'); loadQ();
-  };
+  document.getElementById('round-trans-btn').onclick=function(){currentRound=next;buildQueue();showScreen('game');loadQ();};
 }
 
-// ═══════════════════════════════════
-// TIME ATTACK FLOW
-// ═══════════════════════════════════
+// ═══════ TIME ATTACK ═══════
+// Fix 4: TA completely separated timer; questions only load when taActive=true
 function waitForNextPlayer(){
   taActive=false;
-  clearInterval(taTimerInterval); taTimerInterval=null;
+  clearInterval(taTimerInterval);taTimerInterval=null;
   document.getElementById('hub-timer').classList.add('hidden');
   document.getElementById('hub-timer').classList.remove('warn');
   stopPerQTimer();
   document.querySelectorAll('#ta-start-row').forEach(e=>e.remove());
 
   const ti=taPlaySeq[taTeamIndex];
-  const diffSet=cfg.taPlayerDiff[ti];
-  const diffLabel=diffSet instanceof Set&&diffSet.size>0
-    ?[...diffSet].map(d=>d.charAt(0).toUpperCase()+d.slice(1)).join(', '):'Normal';
+  const ds=cfg.taPlayerDiff[ti];
+  const diffLabel=ds instanceof Set&&ds.size>0?[...ds].map(d=>d.charAt(0).toUpperCase()+d.slice(1)).join(', '):'Normal';
 
-  // Show wait card
-  document.getElementById('answer-card').innerHTML=`
+  // Show wait state in answer card
+  document.getElementById('cat-tag').textContent='';
+  document.getElementById('lang-tag').textContent='';
+  document.getElementById('diff-strip').className='diff-strip';
+  document.getElementById('answer-content').style.opacity='1';
+  document.getElementById('ha-countdown-overlay').classList.add('hidden');
+  document.getElementById('answer-card').querySelector('#answer-content').innerHTML=`
     <div class="ta-wait">
       <strong style="color:${TEAM_COLORS[ti]}">${cfg.playerNames[ti]}</strong>
-      Get ready! Answer as many as you can before time runs out.<br>
-      <span class="ta-diff-info">Difficulty: ${diffLabel} · ${cfg.totalSec}s</span>
+      Answer as many as you can before time runs out!<br>
+      <span class="ta-diff-info">Difficulty: ${diffLabel} · ${cfg.totalSec}s · 3 skips</span>
     </div>`;
+
   document.getElementById('team-btns').innerHTML='';
   document.getElementById('ha-banner').classList.add('hidden');
   document.getElementById('bonus-banner').classList.add('hidden');
   document.getElementById('btn-next').style.display='none';
   document.getElementById('btn-skip').style.display='none';
-  document.getElementById('btn-answer').style.display='none';
   renderScoreBar();
 
   const row=document.createElement('div');
   row.id='ta-start-row';
   row.style.cssText='display:flex;justify-content:center;margin-top:14px;';
   const sb=document.createElement('button');
-  sb.className='btn btn-primary'; sb.style.fontSize='20px';
+  sb.className='btn btn-primary';sb.style.fontSize='20px';
   sb.textContent='▶ Start '+cfg.playerNames[ti];
   sb.addEventListener('click',function(){
-    row.remove(); taSkipsLeft=3;
-    buildQueue(); taTimeRemaining=cfg.totalSec;
-    startTACountdown(); loadQ();
+    row.remove();
+    taSkipsLeft=3;
+    // Rebuild answer-content div since we replaced innerHTML
+    document.getElementById('answer-card').querySelector('#answer-content').innerHTML=
+      `<div id="ans-zh" class="answer-line-zh"></div><div id="ans-th" class="answer-line-th"></div>`;
+    buildQueue();taTimeRemaining=cfg.totalSec;
+    startTACountdown();
+    loadQ();
   });
   row.appendChild(sb);
   document.getElementById('screen-game').appendChild(row);
 }
 
 function startTACountdown(){
-  taActive=true; clearInterval(taTimerInterval);
+  taActive=true;clearInterval(taTimerInterval);
   const el=document.getElementById('hub-timer');
   el.classList.remove('hidden','warn');
   renderTATime(el);
@@ -994,15 +933,11 @@ function startTACountdown(){
     renderTATime(el);
     if(taTimeRemaining<=10){el.classList.add('warn');playTick();}
     if(taTimeRemaining<=0){
-      clearInterval(taTimerInterval); taTimerInterval=null;
-      el.classList.add('hidden'); el.classList.remove('warn');
+      clearInterval(taTimerInterval);taTimerInterval=null;
+      el.classList.add('hidden');el.classList.remove('warn');
       stopPerQTimer();
-      // Finalise score: base + correctCount bonus
       const ti=taPlaySeq[taTeamIndex];
-      if(taPlayerStats[ti]){
-        const c=taPlayerStats[ti].correct;
-        scores[ti]=taPlayerStats[ti].baseScore+c;
-      }
+      if(taPlayerStats[ti]){const c=taPlayerStats[ti].correct;scores[ti]=taPlayerStats[ti].baseScore+c;}
       flashTimeUp();
       setTimeout(()=>advanceTAPlayer(),1800);
     }
@@ -1013,7 +948,7 @@ function renderTATime(el){
   el.textContent=m>0?m+':'+String(taTimeRemaining%60).padStart(2,'0'):String(Math.max(0,taTimeRemaining));
 }
 function advanceTAPlayer(){
-  taActive=false; clearInterval(taTimerInterval); taTimerInterval=null;
+  taActive=false;clearInterval(taTimerInterval);taTimerInterval=null;
   stopPerQTimer();
   document.querySelectorAll('#ta-start-row').forEach(e=>e.remove());
   taTeamIndex++;
@@ -1023,51 +958,30 @@ function advanceTAPlayer(){
   } else waitForNextPlayer();
 }
 
-// Skip
-document.getElementById('btn-skip').addEventListener('click',function(){
-  if(cfg.mode!=='timeAttack'||taSkipsLeft<=0) return;
-  taSkipsLeft--;
-  document.getElementById('skip-count').textContent=taSkipsLeft;
-  this.disabled=(taSkipsLeft<=0);
-  loadQ();
-});
-
-// ═══════════════════════════════════
-// TIMERS
-// ═══════════════════════════════════
+// ═══════ TIMERS ═══════
 function startPerQTimer(sec,onEnd){
-  stopPerQTimer();
-  let r=sec;
+  stopPerQTimer();let r=sec;
   const el=document.getElementById('hub-timer');
-  el.classList.remove('hidden','warn');
-  el.textContent=String(r);
+  el.classList.remove('hidden','warn');el.textContent=String(r);
   perQTimerInterval=setInterval(()=>{
-    r--;
-    el.textContent=String(Math.max(0,r));
+    r--;el.textContent=String(Math.max(0,r));
     if(r<=10){el.classList.add('warn');playTick();}
     if(cfg.mode==='standard'&&cfg.perQuestionSec>0){
-      const e2=(Date.now()-questionStartTime)/1000;
-      if(e2>=10) document.getElementById('bonus-banner').classList.add('hidden');
+      if((Date.now()-questionStartTime)/1000>=10)document.getElementById('bonus-banner').classList.add('hidden');
     }
     if(r<=0){stopPerQTimer();onEnd();}
   },1000);
 }
 function stopPerQTimer(){
-  clearInterval(perQTimerInterval); perQTimerInterval=null;
-  if(cfg.mode!=='timeAttack'){
-    document.getElementById('hub-timer').classList.add('hidden');
-    document.getElementById('hub-timer').classList.remove('warn');
-  }
+  clearInterval(perQTimerInterval);perQTimerInterval=null;
+  if(cfg.mode!=='timeAttack'){document.getElementById('hub-timer').classList.add('hidden');document.getElementById('hub-timer').classList.remove('warn');}
 }
 
-// ═══════════════════════════════════
-// END
-// ═══════════════════════════════════
+// ═══════ END ═══════
 function endGame(){
-  taActive=false; clearInterval(taTimerInterval); taTimerInterval=null;
-  stopPerQTimer();
+  taActive=false;clearInterval(taTimerInterval);taTimerInterval=null;stopPerQTimer();
   document.querySelectorAll('#ta-start-row').forEach(e=>e.remove());
-  showScreen('end'); playFanfare(); launchConfetti();
+  showScreen('end');playFanfare();launchConfetti();
   const DIFF_LABELS={easy:'Easy',normal:'Normal',hard:'Hard',extreme:'Extreme'};
   const sorted=Array.from({length:cfg.numPlayers},(_,i)=>({n:cfg.playerNames[i],s:scores[i]||0,i})).sort((a,b)=>b.s-a.s);
   const medals=['🥇','🥈','🥉'];
@@ -1075,58 +989,44 @@ function endGame(){
     const st=taPlayerStats[t.i];
     let detail='';
     if(cfg.mode==='timeAttack'&&st){
-      const bk=Object.entries(st.diffBreakdown).filter(([,c])=>c>0)
-        .map(([d,c])=>`${c}×${DIFF_LABELS[d]}(+${DIFF_SCORE[d]*c})`).join(' + ');
+      const bk=Object.entries(st.diffBreakdown).filter(([,c])=>c>0).map(([d,c])=>`${c}×${DIFF_LABELS[d]}(+${DIFF_SCORE[d]*c})`).join(' + ');
       detail=`<div style="font-size:12px;color:var(--text2);margin-top:3px;">${bk||'—'} + ${st.correct} correct = <strong style="color:var(--primary)">${t.s}pts</strong></div>`;
     }
     return `<li style="animation-delay:${rank*.08}s;flex-direction:column;align-items:flex-start;">
       <div style="display:flex;align-items:center;gap:12px;width:100%;">
         <span style="font-size:22px">${medals[rank]||'🎮'}</span>
         <span class="dot" style="background:${TEAM_COLORS[t.i]}"></span>
-        <span>${t.n}</span>
-        <span class="lb-score">${t.s}</span>
+        <span>${t.n}</span><span class="lb-score">${t.s}</span>
       </div>${detail}</li>`;
   }).join('');
 }
-document.getElementById('btn-again').addEventListener('click',()=>{ usedIds=new Set(); showScreen('setup'); });
+document.getElementById('btn-again').addEventListener('click',()=>{usedIds=new Set();showScreen('setup');});
 
-// Time-up flash + shake
+// ═══════ FLASH TIME UP ═══════
 function flashTimeUp(){
-  const ov=document.getElementById('timeup-overlay');
-  ov.classList.remove('hidden');
-  document.querySelector('.wrap').classList.add('shake');
-  playTimeUp();
-  setTimeout(()=>{ ov.classList.add('hidden'); document.querySelector('.wrap').classList.remove('shake'); },1600);
+  const ov=document.getElementById('timeup-overlay');ov.classList.remove('hidden');
+  document.querySelector('.wrap').classList.add('shake');playTimeUp();
+  setTimeout(()=>{ov.classList.add('hidden');document.querySelector('.wrap').classList.remove('shake');},1600);
 }
 
-// ═══════════════════════════════════
-// SOUND
-// ═══════════════════════════════════
+// ═══════ SOUND ═══════
 function beep(f,d,v,t='sine',del=0){try{const a=new(window.AudioContext||window.webkitAudioContext)();const o=a.createOscillator(),g=a.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(a.destination);const T=a.currentTime+del;g.gain.setValueAtTime(v,T);g.gain.exponentialRampToValueAtTime(.001,T+d);o.start(T);o.stop(T+d+.05);}catch(e){}}
-function playCorrect(){ beep(523,.1,.18); beep(784,.2,.18,undefined,.12); }
-function playBonus()  { beep(880,.08,.22); beep(1047,.08,.22,undefined,.1); beep(1319,.2,.22,undefined,.2); }
-function playTick()   { beep(1000,.05,.08); }
-function playFanfare(){ [[523,0],[659,.12],[784,.24],[1047,.36],[1319,.52]].forEach(([f,d])=>beep(f,.3,.16,'sine',d)); }
-function playTimeUp() { beep(800,.1,.28,'sawtooth'); beep(600,.15,.28,'sawtooth',.12); beep(400,.2,.28,'sawtooth',.28); beep(120,.6,.35,'sine',.45); }
-
-// BGM
+function playCorrect(){beep(523,.1,.18);beep(784,.2,.18,'sine',.12);}
+function playBonus(){beep(880,.08,.22);beep(1047,.08,.22,'sine',.1);beep(1319,.2,.22,'sine',.2);}
+function playTick(){beep(1000,.05,.08);}
+function playFanfare(){[[523,0],[659,.12],[784,.24],[1047,.36],[1319,.52]].forEach(([f,d])=>beep(f,.3,.16,'sine',d));}
+function playTimeUp(){beep(800,.1,.28,'sawtooth');beep(600,.15,.28,'sawtooth',.12);beep(400,.2,.28,'sawtooth',.28);beep(120,.6,.35,'sine',.45);}
 let bgmCtx=null,bgmNodes=[],bgmPlaying=false,bgmTimer=null;
-document.getElementById('bgm-btn').addEventListener('click',function(){
-  if(bgmPlaying){stopBGM();this.textContent='🔇';}else{startBGM();this.textContent='🔊';}
-});
+document.getElementById('bgm-btn').addEventListener('click',function(){if(bgmPlaying){stopBGM();this.textContent='🔇';}else{startBGM();this.textContent='🔊';}});
 const MELODY=[[523,.2,.05],[659,.2,.05],[784,.4,.1],[880,.2,.05],[784,.2,.05],[659,.4,.1],[523,.2,.05],[659,.2,.05],[784,.2,.05],[880,.4,.2],[784,.2,.05],[659,.2,.05],[523,.4,.1],[659,.2,.05],[784,.2,.05],[880,.2,.05],[1047,.4,.2],[880,.2,.05],[784,.2,.05],[659,.4,.1],[523,.2,.05],[523,.2,.05],[659,.4,.1],[784,.8,.3]];
 function startBGM(){if(!bgmCtx)bgmCtx=new(window.AudioContext||window.webkitAudioContext)();bgmPlaying=true;scheduleBGM();}
 function stopBGM(){bgmPlaying=false;clearTimeout(bgmTimer);bgmNodes.forEach(n=>{try{n.stop();}catch(e){}});bgmNodes=[];}
 function scheduleBGM(){if(!bgmPlaying||!bgmCtx)return;const m=bgmCtx.createGain();m.gain.value=.06;m.connect(bgmCtx.destination);let t=bgmCtx.currentTime+.05;MELODY.forEach(([f,d,g])=>{const o=bgmCtx.createOscillator(),gn=bgmCtx.createGain();o.type='sine';o.frequency.value=f;o.connect(gn);gn.connect(m);gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(1,t+.02);gn.gain.setValueAtTime(1,t+d-.03);gn.gain.linearRampToValueAtTime(0,t+d);o.start(t);o.stop(t+d);bgmNodes.push(o);t+=d+g;});const tot=(MELODY.reduce((s,[,d,g])=>s+d+g,0)+.5)*1000;bgmTimer=setTimeout(scheduleBGM,tot);}
 
-// ═══════════════════════════════════
-// CONFETTI
-// ═══════════════════════════════════
+// ═══════ CONFETTI ═══════
 function launchConfetti(){const c=['#f5c542','#e94560','#3498db','#2ecc71','#9b59b6','#e67e22'];for(let i=0;i<80;i++){const el=document.createElement('div');el.style.cssText=`position:fixed;top:-10px;left:${Math.random()*100}vw;width:${7+Math.random()*7}px;height:${7+Math.random()*7}px;background:${c[~~(Math.random()*c.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:confetti-fall ${1.5+Math.random()*2}s ${Math.random()*.5}s forwards;z-index:9999;pointer-events:none;`;document.body.appendChild(el);setTimeout(()=>el.remove(),4000);}}
 
-// ═══════════════════════════════════
-// UTILS
-// ═══════════════════════════════════
+// ═══════ UTILS ═══════
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
 function showScreen(n){['screen-setup','screen-game','screen-end','screen-round'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=id==='screen-'+n?'block':'none';});}
 </script>
