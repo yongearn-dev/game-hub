@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>📡 Quiz Host</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;900&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#0d0d1a;--panel:#1a1a2e;--panel2:#16213e;--primary:#f5c542;--primary2:#e0a800;--accent:#e94560;--green:#2ecc71;--blue:#3498db;--text:#fff;--text2:#b0b0c3;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.hidden{display:none!important;}
+
+/* Lobby */
+#screen-lobby{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;text-align:center;gap:6px;}
+.lbl{font-size:15px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;}
+.pin{font-family:'Rubik',sans-serif;font-size:clamp(56px,14vw,110px);font-weight:900;color:var(--primary);letter-spacing:10px;text-shadow:0 0 40px rgba(245,197,66,.35);line-height:1;}
+.join-url{font-size:14px;color:var(--text2);font-family:monospace;background:var(--panel);padding:8px 18px;border-radius:8px;word-break:break-all;max-width:500px;}
+#qr-box{background:#fff;padding:10px;border-radius:12px;display:inline-block;}
+.p-count{font-family:'Rubik',sans-serif;font-size:24px;font-weight:700;color:var(--green);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:700px;}
+.chip{background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:50px;padding:6px 14px;font-size:14px;font-weight:700;animation:popIn .3s both;}
+@keyframes popIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+.sheet-status{font-size:13px;color:var(--text2);}
+
+/* Game */
+#screen-game{display:none;padding:16px;max-width:1000px;margin:0 auto;}
+.g-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.q-badge{font-family:'Rubik',sans-serif;font-size:15px;font-weight:700;background:rgba(255,255,255,.08);padding:5px 13px;border-radius:18px;color:var(--text2);}
+.big-timer{font-family:'Rubik',sans-serif;font-size:clamp(52px,10vw,88px);font-weight:900;line-height:1;transition:color .3s;}
+.big-timer.warn{color:var(--accent);animation:tw .5s infinite;}
+@keyframes tw{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
+.diff-badge{font-size:13px;font-weight:700;padding:5px 12px;border-radius:18px;text-transform:uppercase;}
+.diff-easy{background:rgba(46,204,113,.18);color:#2ecc71;}
+.diff-normal{background:rgba(52,152,219,.18);color:#3498db;}
+.diff-hard{background:rgba(233,69,96,.18);color:#e94560;}
+.diff-extreme{background:rgba(155,89,182,.18);color:#9b59b6;}
+
+/* Question card */
+.q-card{background:var(--panel);border-radius:22px;border:2px solid rgba(255,255,255,.07);padding:clamp(18px,3.5vw,36px) clamp(18px,4vw,44px);margin-bottom:16px;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.q-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(162,155,254,.06) 0%,transparent 60%);pointer-events:none;}
+.q-cat{position:absolute;top:11px;left:15px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+.q-zh{font-family:'Rubik',sans-serif;font-size:clamp(18px,3.5vw,36px);font-weight:900;text-align:center;line-height:1.25;margin-bottom:5px;}
+.q-th{font-size:clamp(14px,2.5vw,24px);font-weight:700;color:var(--text2);text-align:center;line-height:1.35;}
+.q-strip{position:absolute;bottom:0;left:0;right:0;height:4px;border-radius:0 0 20px 20px;}
+.q-strip.easy{background:#2ecc71;}.q-strip.normal{background:#3498db;}.q-strip.hard{background:#e94560;}.q-strip.extreme{background:#9b59b6;}
+
+/* Answer grid */
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.ans-tile{border-radius:16px;border:none;padding:clamp(12px,2vw,20px) clamp(12px,2.2vw,22px);display:flex;align-items:center;gap:10px;font-family:'Rubik',sans-serif;font-size:clamp(14px,2vw,20px);font-weight:700;position:relative;overflow:hidden;cursor:default;}
+.ans-tile[data-opt="A"]{background:#e74c3c;color:#fff;}
+.ans-tile[data-opt="B"]{background:#3498db;color:#fff;}
+.ans-tile[data-opt="C"]{background:#2ecc71;color:#1a3a00;}
+.ans-tile[data-opt="D"]{background:#f39c12;color:#3a2000;}
+.ans-icon{font-size:clamp(16px,2.5vw,24px);opacity:.9;}
+.ans-body{flex:1;text-align:left;line-height:1.3;}
+.ans-body-th{font-size:.74em;opacity:.78;display:block;margin-top:1px;}
+.ans-bar{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.18);transition:width .5s;}
+.ans-tile.correct{border:3px solid #fff;animation:cf .5s;}
+.ans-tile.wrong{filter:brightness(.42);}
+@keyframes cf{0%{transform:scale(1);}50%{transform:scale(1.03);}100%{transform:scale(1);}}
+
+/* Distribution bars */
+.dist-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.dist-col{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.dist-bwrap{width:44px;height:80px;background:rgba(255,255,255,.07);border-radius:5px;display:flex;align-items:flex-end;overflow:hidden;}
+.dist-b{width:100%;border-radius:4px 4px 0 0;transition:height .4s;}
+.dist-b[data-opt="A"]{background:#e74c3c;} .dist-b[data-opt="B"]{background:#3498db;}
+.dist-b[data-opt="C"]{background:#2ecc71;} .dist-b[data-opt="D"]{background:#f39c12;}
+.dist-n{font-family:'Rubik',sans-serif;font-size:17px;font-weight:900;}
+.dist-lbl{font-size:11px;font-weight:700;color:var(--text2);}
+.ans-info{text-align:center;font-size:14px;color:var(--text2);margin-bottom:10px;}
+.ans-info span{color:var(--primary);font-weight:900;font-size:18px;}
+
+.ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 24px;font-family:'Rubik',sans-serif;font-size:16px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:transform .15s;text-decoration:none;}
+.btn:hover{transform:translateY(-2px);}.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.btn-p{background:var(--primary);color:#1a1a00;box-shadow:0 5px 0 var(--primary2);}
+.btn-g{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.14);}
+.btn-g:hover{background:rgba(255,255,255,.14);}
+.btn-a{background:var(--accent);color:#fff;box-shadow:0 4px 0 #c73652;}
+
+/* Leaderboard */
+#screen-leaderboard{display:none;padding:20px;max-width:680px;margin:0 auto;}
+#screen-leaderboard h2{font-family:'Rubik',sans-serif;font-size:34px;font-weight:900;text-align:center;margin-bottom:20px;background:linear-gradient(135deg,#f5c542,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.lb{list-style:none;}
+.lb-item{display:flex;align-items:center;gap:12px;padding:11px 16px;margin:5px 0;background:var(--panel2);border-radius:12px;font-size:17px;font-weight:700;animation:si .4s both;}
+.lb-item:nth-child(1){background:rgba(245,197,66,.18);border:1px solid var(--primary);font-size:20px;}
+.lb-item:nth-child(2){background:rgba(180,180,200,.1);}
+.lb-item:nth-child(3){background:rgba(205,127,50,.13);}
+.lb-rank{font-size:22px;min-width:32px;}
+.lb-name{flex:1;}
+.lb-score{color:var(--primary);font-family:'Rubik',sans-serif;font-size:20px;font-weight:900;}
+.lb-delta{font-size:13px;color:var(--green);margin-left:5px;}
+@keyframes si{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:none;}}
+
+/* End */
+#screen-end{display:none;text-align:center;padding:40px 20px;}
+#screen-end h2{font-family:'Rubik',sans-serif;font-size:44px;font-weight:900;background:linear-gradient(135deg,#f5c542,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.final-lb{list-style:none;max-width:580px;margin:0 auto 28px;}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="screen-lobby">
+  <div class="lbl">Game PIN</div>
+  <div class="pin" id="pin-display">- - - - - -</div>
+  <div class="join-url" id="url-display"></div>
+  <div id="qr-box"><div id="qr-code"></div></div>
+  <div class="p-count"><span id="p-num">0</span> players joined</div>
+  <div class="chips" id="chips"></div>
+  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-g" id="btn-load">📊 Load Questions</button>
+    <button class="btn btn-p" id="btn-start" disabled>▶ Start Game</button>
+  </div>
+  <div class="sheet-status" id="sheet-status">No questions loaded yet.</div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game">
+  <div class="g-header">
+    <span class="q-badge" id="q-badge">Q 1 / ?</span>
+    <div class="big-timer" id="big-timer">20</div>
+    <span class="diff-badge diff-normal" id="diff-badge">Normal</span>
+  </div>
+  <div class="q-card">
+    <div class="q-cat" id="q-cat"></div>
+    <div class="q-zh" id="q-zh"></div>
+    <div class="q-th" id="q-th"></div>
+    <div class="q-strip" id="q-strip"></div>
+  </div>
+  <div class="ans-grid" id="ans-grid"></div>
+  <div class="ans-info">Answered: <span id="ans-ct">0</span> / <span id="tot-p">0</span></div>
+  <div class="dist-row" id="dist-row"></div>
+  <div class="ctrl">
+    <button class="btn btn-g" id="btn-skip-t">⏩ Skip Timer</button>
+    <button class="btn btn-a" id="btn-reveal" disabled>🔓 Show Answer</button>
+    <button class="btn btn-p" id="btn-next" disabled>Next ▶</button>
+  </div>
+</div>
+
+<!-- LEADERBOARD (mid-game) -->
+<div id="screen-leaderboard">
+  <h2 id="lb-title">Leaderboard</h2>
+  <ul class="lb" id="lb-list"></ul>
+  <div class="ctrl" style="margin-top:20px;">
+    <button class="btn btn-p" id="btn-cont">Continue ▶</button>
+  </div>
+</div>
+
+<!-- END -->
+<div id="screen-end">
+  <h2>🎉 Game Over!</h2>
+  <p style="color:var(--text2);margin-bottom:24px;">Final Standings</p>
+  <ul class="lb final-lb" id="final-lb"></ul>
+  <div class="ctrl">
+    <button class="btn btn-p" id="btn-again">🔄 Play Again</button>
+    <a href="../index.html" class="btn btn-g" style="text-decoration:none">← Hub</a>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, off, remove }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ── Firebase ──
+const FB = {
+  apiKey:"AIzaSyB-gMIHU72nzKVzPd-M_Vu3Ahv7bjrQldY",
+  authDomain:"gamehub-7c512.firebaseapp.com",
+  databaseURL:"https://gamehub-7c512-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"gamehub-7c512",
+  storageBucket:"gamehub-7c512.firebasestorage.app",
+  messagingSenderId:"258324779724",
+  appId:"1:258324779724:web:46dc5fb5f85720ca982869"
+};
+const app = initializeApp(FB);
+const db  = getDatabase(app);
+
+const SHEET_URL  = "https://opensheet.elk.sh/1nmgda-PSW0qNpEnT65HozbrbK4SPoOlfq3WlEIQSgf4/Sheet4";
+const TIMER_SEC  = 20;
+const DIFF_SCORE = {easy:800, normal:1200, hard:1800, extreme:2500};
+const OPT_ICONS  = {A:'▲', B:'●', C:'◆', D:'■'};
+
+let PIN='', gameRef=null, qs=[], qi=0;
+let timerInt=null, timerLeft=0, revealed=false;
+let players={}, answers={}, prevScores={};
+let answersRef=null, playersRef=null;
+
+// ── INIT LOBBY ──
+async function initLobby(){
+  PIN = String(Math.floor(100000+Math.random()*900000));
+  gameRef = ref(db,'games/'+PIN);
+  await set(gameRef,{status:'lobby',currentQ:-1,totalQ:0,questionData:null});
+
+  document.getElementById('pin-display').textContent = PIN;
+  const playerUrl = location.origin + location.pathname.replace('host.html','player.html')+'?pin='+PIN;
+  document.getElementById('url-display').textContent = playerUrl;
+  new QRCode(document.getElementById('qr-code'),{text:playerUrl,width:150,height:150,colorDark:'#000',colorLight:'#fff'});
+
+  // Watch players
+  playersRef = ref(db,'games/'+PIN+'/players');
+  onValue(playersRef, snap=>{
+    players = snap.val()||{};
+    renderChips();
+  });
+}
+initLobby();
+
+function renderChips(){
+  const names=Object.values(players).map(p=>p.name||'?');
+  document.getElementById('p-num').textContent=names.length;
+  document.getElementById('chips').innerHTML=names.map(n=>`<div class="chip">${n}</div>`).join('');
+  document.getElementById('btn-start').disabled=names.length===0||qs.length===0;
+}
+
+// ── LOAD SHEET ──
+document.getElementById('btn-load').addEventListener('click',loadSheet);
+async function loadSheet(){
+  document.getElementById('sheet-status').textContent='⏳ Loading…';
+  try{
+    const r=await fetch(SHEET_URL); const data=await r.json();
+    const t=v=>(v||'').toString().trim();
+    qs=data.map(row=>({
+      id:t(row.id), category:t(row.category), difficulty:t(row.difficulty)||'normal',
+      qZH:t(row['question ZH']||row.question_ZH||''),
+      qTH:t(row['question TH']||row.question_TH||''),
+      aZH:t(row['A (ZH)']||''),aTH:t(row['A (TH)']||''),
+      bZH:t(row['B (ZH)']||''),bTH:t(row['B (TH)']||''),
+      cZH:t(row['C (ZH)']||''),cTH:t(row['C (TH)']||''),
+      dZH:t(row['D (ZH)']||''),dTH:t(row['D (TH)']||''),
+      answer:t(row.answer).toUpperCase().charAt(0),
+    })).filter(q=>q.qZH||q.qTH);
+    shuffle(qs);
+    document.getElementById('sheet-status').textContent=`✅ ${qs.length} questions loaded`;
+    await update(gameRef,{totalQ:qs.length});
+    document.getElementById('btn-start').disabled=Object.keys(players).length===0;
+  }catch(e){
+    document.getElementById('sheet-status').textContent='❌ '+e.message;
+  }
+}
+loadSheet();
+
+// ── START ──
+document.getElementById('btn-start').addEventListener('click',()=>{
+  qi=0; prevScores={}; Object.keys(players).forEach(u=>prevScores[u]=0);
+  update(gameRef,{status:'playing'});
+  showScreen('game'); loadQ();
+});
+
+// ── LOAD QUESTION ──
+function loadQ(){
+  if(qi>=qs.length){showFinal();return;}
+  if(answersRef) off(answersRef);
+  const q=qs[qi]; revealed=false; answers={};
+  // Push question to Firebase
+  const qd={
+    idx:qi,total:qs.length,
+    qZH:q.qZH,qTH:q.qTH,
+    aZH:q.aZH,aTH:q.aTH,bZH:q.bZH,bTH:q.bTH,
+    cZH:q.cZH,cTH:q.cTH,dZH:q.dZH,dTH:q.dTH,
+    category:q.category,difficulty:q.difficulty,
+    timerSec:TIMER_SEC,timerEnd:Date.now()+TIMER_SEC*1000,
+    status:'answering',answer:'',
+  };
+  update(gameRef,{currentQ:qi,questionData:qd});
+  set(ref(db,'games/'+PIN+'/answers'),null);
+
+  // Render
+  document.getElementById('q-badge').textContent=`Q ${qi+1} / ${qs.length}`;
+  const db2=document.getElementById('diff-badge');
+  db2.textContent=q.difficulty.charAt(0).toUpperCase()+q.difficulty.slice(1);
+  db2.className='diff-badge diff-'+q.difficulty;
+  document.getElementById('q-cat').textContent=q.category;
+  document.getElementById('q-zh').textContent=q.qZH;
+  document.getElementById('q-th').textContent=q.qTH;
+  document.getElementById('q-strip').className='q-strip '+q.difficulty;
+  document.getElementById('tot-p').textContent=Object.keys(players).length;
+  document.getElementById('btn-reveal').disabled=true;
+  document.getElementById('btn-next').disabled=true;
+
+  // Answer tiles
+  document.getElementById('ans-grid').innerHTML=['A','B','C','D'].map(o=>{
+    const zh=q[o.toLowerCase()+'ZH'],th=q[o.toLowerCase()+'TH'];
+    return `<div class="ans-tile" data-opt="${o}">
+      <span class="ans-icon">${OPT_ICONS[o]}</span>
+      <span class="ans-body">${zh}<span class="ans-body-th">${th}</span></span>
+      <div class="ans-bar" data-opt="${o}" style="width:0%"></div>
+    </div>`;
+  }).join('');
+
+  // Dist bars
+  document.getElementById('dist-row').innerHTML=['A','B','C','D'].map(o=>
+    `<div class="dist-col">
+      <div class="dist-n" id="dn-${o}">0</div>
+      <div class="dist-bwrap"><div class="dist-b" data-opt="${o}" id="db-${o}" style="height:0%"></div></div>
+      <div class="dist-lbl">${o}</div>
+    </div>`).join('');
+
+  // Watch live answers
+  answersRef=ref(db,'games/'+PIN+'/answers');
+  onValue(answersRef,snap=>{answers=snap.val()||{};updateDist();});
+
+  startTimer(TIMER_SEC);
+}
+
+// ── TIMER ──
+function startTimer(sec){
+  clearInterval(timerInt); timerLeft=sec;
+  const el=document.getElementById('big-timer');
+  el.textContent=timerLeft; el.className='big-timer';
+  timerInt=setInterval(()=>{
+    timerLeft--;
+    el.textContent=timerLeft;
+    if(timerLeft<=5)el.classList.add('warn');
+    if(timerLeft<=0){clearInterval(timerInt);document.getElementById('btn-reveal').disabled=false;document.getElementById('btn-reveal').click();}
+  },1000);
+}
+document.getElementById('btn-skip-t').addEventListener('click',()=>{
+  clearInterval(timerInt);document.getElementById('big-timer').textContent='0';
+  document.getElementById('btn-reveal').disabled=false;document.getElementById('btn-reveal').click();
+});
+
+// ── REVEAL ──
+document.getElementById('btn-reveal').addEventListener('click',()=>{
+  if(revealed)return; revealed=true;
+  clearInterval(timerInt);
+  document.getElementById('btn-reveal').disabled=true;
+  const q=qs[qi]; const correct=q.answer;
+  document.querySelectorAll('.ans-tile').forEach(t=>t.classList.add(t.dataset.opt===correct?'correct':'wrong'));
+  update(ref(db,'games/'+PIN+'/questionData'),{status:'revealed',answer:correct});
+  // Score players
+  const bonus=timerLeft; const base=DIFF_SCORE[q.difficulty]||1000;
+  const upd={};
+  Object.entries(answers).forEach(([uid,ans])=>{
+    if(ans===correct){
+      const pts=base+bonus*25;
+      const cur=players[uid]?.score||0;
+      upd['games/'+PIN+'/players/'+uid+'/score']=cur+pts;
+    }
+  });
+  if(Object.keys(upd).length)update(ref(db),upd);
+  updateDist(); document.getElementById('btn-next').disabled=false;
+});
+
+// ── DISTRIBUTION ──
+function updateDist(){
+  const total=Object.keys(players).length||1;
+  const cnt={A:0,B:0,C:0,D:0};
+  Object.values(answers).forEach(a=>{if(cnt[a]!==undefined)cnt[a]++;});
+  document.getElementById('ans-ct').textContent=Object.keys(answers).length;
+  const mx=Math.max(...Object.values(cnt),1);
+  ['A','B','C','D'].forEach(o=>{
+    const c=cnt[o];
+    const pct=Math.round(c/mx*100);
+    const bar=document.getElementById('db-'+o); if(bar)bar.style.height=pct+'%';
+    const num=document.getElementById('dn-'+o); if(num)num.textContent=c;
+    const overlay=document.querySelector(`.ans-bar[data-opt="${o}"]`);
+    if(overlay)overlay.style.width=Math.round(c/total*100)+'%';
+  });
+}
+
+// ── NEXT ──
+document.getElementById('btn-next').addEventListener('click',()=>{
+  if(answersRef)off(answersRef);
+  if((qi+1)%3===0&&qi+1<qs.length){showMidLB();}
+  else{qi++;loadQ();}
+});
+
+function showMidLB(){
+  get(ref(db,'games/'+PIN+'/players')).then(snap=>{
+    players=snap.val()||{};
+    renderLB('lb-list',false);
+    document.getElementById('lb-title').textContent='📊 Leaderboard';
+    showScreen('leaderboard');
+  });
+}
+document.getElementById('btn-cont').addEventListener('click',()=>{qi++;showScreen('game');loadQ();});
+
+function showFinal(){
+  get(ref(db,'games/'+PIN+'/players')).then(snap=>{
+    players=snap.val()||{};
+    renderLB('final-lb',true);
+    showScreen('end'); launchConfetti();
+    update(gameRef,{status:'ended'});
+  });
+}
+
+function renderLB(listId,isFinal){
+  const sorted=Object.entries(players).map(([uid,p])=>({name:p.name||'?',score:p.score||0,prev:prevScores[uid]||0})).sort((a,b)=>b.score-a.score);
+  const medals=['🥇','🥈','🥉'];
+  document.getElementById(listId).innerHTML=sorted.map((p,i)=>{
+    const d=p.score-p.prev;
+    return `<li class="lb-item" style="animation-delay:${i*.07}s">
+      <span class="lb-rank">${medals[i]||(i+1)}</span>
+      <span class="lb-name">${p.name}</span>
+      ${d>0&&!isFinal?`<span class="lb-delta">+${d.toLocaleString()}</span>`:''}
+      <span class="lb-score">${p.score.toLocaleString()}</span>
+    </li>`;
+  }).join('');
+  prevScores={};sorted.forEach(p=>{prevScores[p.name]=p.score;});
+}
+
+document.getElementById('btn-again').addEventListener('click',()=>location.reload());
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function showScreen(n){['lobby','game','leaderboard','end'].forEach(s=>{const el=document.getElementById('screen-'+s);if(el)el.style.display=s===n?(s==='lobby'?'flex':'block'):'none';});}
+function launchConfetti(){const c=['#f5c542','#e94560','#3498db','#2ecc71','#9b59b6','#e67e22'];for(let i=0;i<80;i++){const el=document.createElement('div');el.style.cssText=`position:fixed;top:-10px;left:${Math.random()*100}vw;width:${7+Math.random()*7}px;height:${7+Math.random()*7}px;background:${c[~~(Math.random()*c.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:confetti-fall ${1.5+Math.random()*2}s ${Math.random()*.5}s forwards;z-index:9999;pointer-events:none;`;document.body.appendChild(el);setTimeout(()=>el.remove(),4000);}}
+</script>
+</body>
+</html>

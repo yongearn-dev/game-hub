@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>🎮 Quiz Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;900&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#0d0d1a;--panel:#1a1a2e;--panel2:#16213e;--primary:#f5c542;--accent:#e94560;--green:#2ecc71;--text:#fff;--text2:#b0b0c3;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
+.screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;}
+.hidden{display:none!important;}
+
+/* ── JOIN ── */
+#screen-join{}
+.logo{font-size:48px;margin-bottom:8px;}
+.logo-title{font-family:'Rubik',sans-serif;font-size:28px;font-weight:900;background:linear-gradient(135deg,#a29bfe,#f5c542);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;}
+.logo-sub{font-size:14px;color:var(--text2);margin-bottom:28px;}
+
+.join-field{
+  background:rgba(255,255,255,.07);
+  border:2px solid rgba(255,255,255,.15);
+  border-radius:14px;padding:14px 18px;
+  color:var(--text);font-family:'Rubik',sans-serif;
+  font-size:22px;font-weight:700;text-align:center;
+  letter-spacing:4px;width:100%;max-width:280px;
+  outline:none;margin-bottom:12px;
+  -webkit-appearance:none;
+}
+.join-field:focus{border-color:var(--primary);}
+.join-field::placeholder{color:rgba(255,255,255,.25);letter-spacing:2px;}
+.name-field{
+  background:rgba(255,255,255,.07);
+  border:2px solid rgba(255,255,255,.15);
+  border-radius:14px;padding:14px 18px;
+  color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:18px;text-align:center;
+  width:100%;max-width:280px;
+  outline:none;margin-bottom:16px;
+  -webkit-appearance:none;
+}
+.name-field:focus{border-color:var(--primary);}
+
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 32px;font-family:'Rubik',sans-serif;
+  font-size:18px;font-weight:700;border:none;border-radius:14px;
+  cursor:pointer;transition:transform .15s;width:100%;max-width:280px;
+}
+.btn:active{transform:scale(.97);}
+.btn-p{background:var(--primary);color:#1a1a00;box-shadow:0 5px 0 var(--primary2);}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;}
+.err{font-size:13px;color:var(--accent);margin-top:6px;min-height:18px;}
+
+/* ── WAITING ── */
+#screen-waiting{}
+.wait-icon{font-size:56px;margin-bottom:12px;animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.wait-title{font-family:'Rubik',sans-serif;font-size:24px;font-weight:900;margin-bottom:6px;}
+.wait-name{font-family:'Rubik',sans-serif;font-size:18px;color:var(--primary);font-weight:700;margin-bottom:6px;}
+.wait-sub{font-size:14px;color:var(--text2);}
+
+/* ── QUESTION ── */
+#screen-question{justify-content:flex-start;padding:12px 14px;}
+.q-header{width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.q-progress-bar{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin:0 10px;overflow:hidden;}
+.q-progress-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .4s;}
+.q-num{font-size:13px;font-weight:700;color:var(--text2);}
+/* Timer ring */
+.timer-ring-wrap{display:flex;flex-direction:column;align-items:center;margin:4px 0 10px;}
+.timer-num{font-family:'Rubik',sans-serif;font-size:42px;font-weight:900;line-height:1;transition:color .3s;}
+.timer-num.warn{color:var(--accent);animation:tw .5s infinite;}
+@keyframes tw{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+/* Question text */
+.q-text-box{background:var(--panel);border-radius:18px;border:1px solid rgba(255,255,255,.07);padding:16px 18px;width:100%;margin-bottom:12px;}
+.q-text-zh{font-family:'Rubik',sans-serif;font-size:clamp(16px,4.5vw,22px);font-weight:900;line-height:1.3;margin-bottom:4px;}
+.q-text-th{font-size:clamp(13px,3.5vw,17px);color:var(--text2);line-height:1.4;}
+/* Answer buttons — 2x2 grid filling screen */
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;flex:1;}
+.ans-btn{
+  border-radius:18px;border:none;
+  padding:0 12px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;
+  font-family:'Rubik',sans-serif;font-size:clamp(14px,4vw,18px);font-weight:700;
+  cursor:pointer;
+  transition:transform .1s,filter .2s;
+  min-height:80px;
+  position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+  line-height:1.3;text-align:center;
+}
+.ans-btn:active{transform:scale(.95);}
+.ans-btn[data-opt="A"]{background:#e74c3c;color:#fff;}
+.ans-btn[data-opt="B"]{background:#3498db;color:#fff;}
+.ans-btn[data-opt="C"]{background:#2ecc71;color:#1a3a00;}
+.ans-btn[data-opt="D"]{background:#f39c12;color:#3a2000;}
+.ans-icon{font-size:22px;opacity:.85;}
+.ans-zh{font-size:clamp(13px,3.8vw,17px);font-weight:900;}
+.ans-th{font-size:clamp(11px,3vw,14px);opacity:.8;font-weight:700;}
+.ans-btn.selected{transform:scale(.96);box-shadow:inset 0 0 0 4px rgba(255,255,255,.7);}
+.ans-btn:disabled,.ans-btn.locked{pointer-events:none;}
+
+/* ── ANSWERED ── */
+#screen-answered{padding:24px;}
+.ans-result{font-size:72px;margin-bottom:10px;}
+.ans-result-label{font-family:'Rubik',sans-serif;font-size:22px;font-weight:900;margin-bottom:6px;}
+.ans-pts{font-family:'Rubik',sans-serif;font-size:36px;font-weight:900;color:var(--primary);margin-bottom:6px;}
+.ans-total{font-size:16px;color:var(--text2);}
+.wait-next{font-size:14px;color:var(--text2);margin-top:12px;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ── END ── */
+#screen-end{padding:24px;}
+.end-icon{font-size:64px;margin-bottom:8px;}
+.end-rank{font-family:'Rubik',sans-serif;font-size:20px;font-weight:700;color:var(--text2);margin-bottom:4px;}
+.end-score{font-family:'Rubik',sans-serif;font-size:48px;font-weight:900;color:var(--primary);margin-bottom:16px;}
+.end-medal{font-size:48px;margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<!-- ── JOIN ── -->
+<div class="screen" id="screen-join">
+  <div class="logo">🎮</div>
+  <div class="logo-title">Quiz Game</div>
+  <div class="logo-sub">Enter PIN to join</div>
+  <input class="join-field" id="pin-input" type="tel" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="off"/>
+  <input class="name-field" id="name-input" type="text" maxlength="16" placeholder="Your name" autocomplete="off"/>
+  <button class="btn btn-p" id="btn-join">Join Game</button>
+  <div class="err" id="join-err"></div>
+</div>
+
+<!-- ── WAITING ── -->
+<div class="screen hidden" id="screen-waiting">
+  <div class="wait-icon">⏳</div>
+  <div class="wait-title">Waiting for host…</div>
+  <div class="wait-name" id="wait-name"></div>
+  <div class="wait-sub">Get ready!</div>
+</div>
+
+<!-- ── QUESTION ── -->
+<div class="screen hidden" id="screen-question">
+  <div class="q-header">
+    <span class="q-num" id="q-num">1/10</span>
+    <div class="q-progress-bar"><div class="q-progress-fill" id="q-prog-fill" style="width:0%"></div></div>
+    <span class="q-num" id="q-cat-lbl"></span>
+  </div>
+  <div class="timer-ring-wrap">
+    <div class="timer-num" id="timer-num">20</div>
+  </div>
+  <div class="q-text-box">
+    <div class="q-text-zh" id="p-q-zh"></div>
+    <div class="q-text-th" id="p-q-th"></div>
+  </div>
+  <div class="ans-grid" id="p-ans-grid"></div>
+</div>
+
+<!-- ── ANSWERED ── -->
+<div class="screen hidden" id="screen-answered">
+  <div class="ans-result" id="ans-emoji">✅</div>
+  <div class="ans-result-label" id="ans-label">Correct!</div>
+  <div class="ans-pts" id="ans-pts">+1200</div>
+  <div class="ans-total" id="ans-total">Total: 1200</div>
+  <div class="wait-next">Waiting for next question…</div>
+</div>
+
+<!-- ── END ── -->
+<div class="screen hidden" id="screen-end">
+  <div class="end-medal" id="end-medal">🎉</div>
+  <div class="end-rank" id="end-rank">You finished!</div>
+  <div class="end-score" id="end-score">0</div>
+  <div style="font-size:14px;color:var(--text2);">Thanks for playing!</div>
+</div>
+
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, push, off }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = {
+  apiKey:"AIzaSyB-gMIHU72nzKVzPd-M_Vu3Ahv7bjrQldY",
+  authDomain:"gamehub-7c512.firebaseapp.com",
+  databaseURL:"https://gamehub-7c512-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"gamehub-7c512",
+  storageBucket:"gamehub-7c512.firebasestorage.app",
+  messagingSenderId:"258324779724",
+  appId:"1:258324779724:web:46dc5fb5f85720ca982869"
+};
+const app = initializeApp(FB);
+const db  = getDatabase(app);
+
+const OPT_ICONS = {A:'▲',B:'●',C:'◆',D:'■'};
+
+let PIN='', myUID='', myName='', myScore=0;
+let gameRef=null, qWatcher=null, statusWatcher=null;
+let timerInt=null, timerLeft=0, hasAnswered=false;
+
+// ── Pre-fill PIN from URL ──
+const urlPin = new URLSearchParams(location.search).get('pin');
+if(urlPin) document.getElementById('pin-input').value = urlPin;
+// Focus name if pin prefilled
+if(urlPin) setTimeout(()=>document.getElementById('name-input').focus(), 300);
+
+// ── JOIN ──
+document.getElementById('btn-join').addEventListener('click', joinGame);
+document.getElementById('name-input').addEventListener('keydown', e=>{ if(e.key==='Enter') joinGame(); });
+
+async function joinGame(){
+  const pin  = document.getElementById('pin-input').value.trim();
+  const name = document.getElementById('name-input').value.trim();
+  const err  = document.getElementById('join-err');
+  err.textContent = '';
+
+  if(pin.length!==6){ err.textContent='Enter a 6-digit PIN'; return; }
+  if(!name){ err.textContent='Enter your name'; return; }
+
+  // Check game exists
+  const snap = await get(ref(db,'games/'+pin));
+  if(!snap.exists()){ err.textContent='Game not found. Check PIN.'; return; }
+  const status = snap.val()?.status;
+  if(status==='ended'){ err.textContent='This game has ended.'; return; }
+
+  PIN = pin; myName = name;
+  gameRef = ref(db,'games/'+PIN);
+
+  // Register player — use push() for unique ID
+  const pRef = push(ref(db,'games/'+PIN+'/players'));
+  myUID = pRef.key;
+  await set(pRef,{name, score:0});
+
+  showScreen('waiting');
+  document.getElementById('wait-name').textContent = name;
+  watchGame();
+}
+
+// ── WATCH GAME ──
+function watchGame(){
+  // Watch question changes
+  qWatcher = ref(db,'games/'+PIN+'/questionData');
+  onValue(qWatcher, snap=>{
+    const qd = snap.val();
+    if(!qd) return;
+    if(qd.status==='answering') showQuestion(qd);
+    else if(qd.status==='revealed') showAnswered(qd);
+  });
+  // Watch game status
+  statusWatcher = ref(db,'games/'+PIN+'/status');
+  onValue(statusWatcher, snap=>{
+    if(snap.val()==='ended') showEnd();
+  });
+}
+
+// ── SHOW QUESTION ──
+function showQuestion(qd){
+  hasAnswered = false;
+  clearInterval(timerInt);
+
+  document.getElementById('q-num').textContent = `${qd.idx+1}/${qd.total}`;
+  document.getElementById('q-prog-fill').style.width = ((qd.idx/qd.total)*100)+'%';
+  document.getElementById('q-cat-lbl').textContent = qd.category||'';
+  document.getElementById('p-q-zh').textContent = qd.qZH||'';
+  document.getElementById('p-q-th').textContent = qd.qTH||'';
+
+  // Answer buttons
+  const grid = document.getElementById('p-ans-grid');
+  grid.innerHTML = ['A','B','C','D'].map(o=>{
+    const zh=qd[o.toLowerCase()+'ZH']||'';
+    const th=qd[o.toLowerCase()+'TH']||'';
+    return `<button class="ans-btn" data-opt="${o}">
+      <span class="ans-icon">${OPT_ICONS[o]}</span>
+      <span class="ans-zh">${zh}</span>
+      ${th?`<span class="ans-th">${th}</span>`:''}
+    </button>`;
+  }).join('');
+
+  grid.querySelectorAll('.ans-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>submitAnswer(btn.dataset.opt, btn));
+  });
+
+  showScreen('question');
+
+  // Sync timer from timerEnd
+  const secLeft = Math.max(0, Math.round((qd.timerEnd - Date.now())/1000));
+  startTimer(secLeft);
+}
+
+function startTimer(sec){
+  clearInterval(timerInt);
+  timerLeft = sec;
+  const el = document.getElementById('timer-num');
+  el.textContent = timerLeft; el.className = 'timer-num';
+  timerInt = setInterval(()=>{
+    timerLeft--;
+    el.textContent = Math.max(0,timerLeft);
+    if(timerLeft<=5) el.classList.add('warn');
+    if(timerLeft<=0){ clearInterval(timerInt); lockAnswers(); }
+  },1000);
+}
+
+function lockAnswers(){
+  document.querySelectorAll('.ans-btn').forEach(b=>{b.disabled=true;b.classList.add('locked');});
+  if(!hasAnswered) showScreen('answered','no-answer');
+}
+
+// ── SUBMIT ANSWER ──
+function submitAnswer(opt, btn){
+  if(hasAnswered) return;
+  hasAnswered = true;
+  clearInterval(timerInt);
+
+  // Visual feedback
+  document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
+  btn.classList.add('selected');
+
+  // Record answer with timestamp
+  set(ref(db,'games/'+PIN+'/answers/'+myUID), opt);
+  // Show "answered" waiting screen briefly
+  showScreen('answered','waiting');
+}
+
+// ── SHOW ANSWER RESULT ──
+function showAnswered(qd){
+  clearInterval(timerInt);
+  const correct = qd.answer;
+  const myAns   = null; // we'll check from Firebase
+
+  // Check our stored answer
+  get(ref(db,'games/'+PIN+'/answers/'+myUID)).then(snap=>{
+    const myAns = snap.val();
+    const isCorrect = myAns === correct;
+    const isAnswered = !!myAns;
+
+    // Refresh score from players node
+    get(ref(db,'games/'+PIN+'/players/'+myUID)).then(psnap=>{
+      myScore = psnap.val()?.score || 0;
+
+      document.getElementById('ans-emoji').textContent  = !isAnswered?'⏱️': isCorrect?'✅':'❌';
+      document.getElementById('ans-label').textContent  = !isAnswered?'Time\'s up!': isCorrect?'Correct!':'Wrong!';
+      document.getElementById('ans-pts').textContent    = !isAnswered?'':isCorrect?'+points!':'No points';
+      document.getElementById('ans-pts').style.color    = isCorrect?'var(--primary)':'var(--text2)';
+      document.getElementById('ans-total').textContent  = 'Total: '+myScore.toLocaleString();
+      showScreen('answered');
+    });
+  });
+}
+
+// ── END ──
+function showEnd(){
+  clearInterval(timerInt);
+  if(qWatcher) off(qWatcher);
+  if(statusWatcher) off(statusWatcher);
+
+  // Get final rank
+  get(ref(db,'games/'+PIN+'/players')).then(snap=>{
+    const all = snap.val()||{};
+    const sorted = Object.entries(all).sort(([,a],[,b])=>(b.score||0)-(a.score||0));
+    const rank = sorted.findIndex(([uid])=>uid===myUID)+1;
+    const medals = {1:'🥇',2:'🥈',3:'🥉'};
+    document.getElementById('end-medal').textContent = medals[rank]||'🎮';
+    document.getElementById('end-rank').textContent  = rank<=3?'You finished #'+rank:'You finished #'+rank;
+    document.getElementById('end-score').textContent = myScore.toLocaleString()+' pts';
+    showScreen('end');
+  });
+}
+
+function showScreen(n, sub){
+  ['join','waiting','question','answered','end'].forEach(s=>{
+    document.getElementById('screen-'+s).classList.toggle('hidden', s!==n);
+  });
+}
+</script>
+</body>
+</html>
